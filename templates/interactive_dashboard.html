@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Interactive Stock Dashboard</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .controls {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .control-group label { font-weight: bold; font-size: 14px; }
+        select, input, button {
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        button {
+            background: #ff6b6b;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        button:hover { background: #ee5a24; transform: translateY(-2px); }
+        .chart-container {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .loading { text-align: center; padding: 50px; font-size: 18px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📈 Interactive Stock Dashboard</h1>
+            <p>Real-time stock data with interactive controls</p>
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label>Data Type:</label>
+                <select id="dataType" onchange="updateSymbolOptions()">
+                    <option value="stocks">Stocks</option>
+                    <option value="forex">Forex</option>
+                    <option value="commodities">Commodities</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Symbol:</label>
+                <select id="symbol">
+                    <option value="AAPL">Apple (AAPL)</option>
+                    <option value="GOOGL">Google (GOOGL)</option>
+                    <option value="MSFT">Microsoft (MSFT)</option>
+                    <option value="TSLA">Tesla (TSLA)</option>
+                    <option value="AMZN">Amazon (AMZN)</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Chart Type:</label>
+                <select id="chartType">
+                    <option value="line">Line Chart</option>
+                    <option value="candlestick">Candlestick</option>
+                    <option value="ohlc">OHLC</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Time Range:</label>
+                <select id="timeRange">
+                    <option value="1M">1 Month</option>
+                    <option value="3M">3 Months</option>
+                    <option value="6M">6 Months</option>
+                    <option value="1Y">1 Year</option>
+                    <option value="2Y">2 Years</option>
+                </select>
+            </div>
+            <button onclick="updateChart()">Update Chart</button>
+            <button onclick="toggleTheme()">🌙 Dark Mode</button>
+        </div>
+        
+        <div class="chart-container">
+            <div id="chart" style="height: 600px;"></div>
+        </div>
+        
+        <div class="chart-container">
+            <div id="volumeChart" style="height: 200px;"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentData = null;
+        let isDark = false;
+
+        // Initialize with default chart
+        window.onload = function() {
+            updateChart();
+        };
+
+        function updateSymbolOptions() {
+            const dataType = document.getElementById('dataType').value;
+            const symbolSelect = document.getElementById('symbol');
+            
+            symbolSelect.innerHTML = '';
+            
+            if (dataType === 'stocks') {
+                const stocks = [
+                    {value: 'AAPL', text: 'Apple (AAPL)'},
+                    {value: 'GOOGL', text: 'Google (GOOGL)'},
+                    {value: 'MSFT', text: 'Microsoft (MSFT)'},
+                    {value: 'TSLA', text: 'Tesla (TSLA)'},
+                    {value: 'AMZN', text: 'Amazon (AMZN)'}
+                ];
+                stocks.forEach(stock => {
+                    const option = document.createElement('option');
+                    option.value = stock.value;
+                    option.textContent = stock.text;
+                    symbolSelect.appendChild(option);
+                });
+            } else if (dataType === 'forex') {
+                const pairs = [
+                    {value: 'EUR/USD', text: 'EUR/USD'},
+                    {value: 'GBP/USD', text: 'GBP/USD'},
+                    {value: 'USD/JPY', text: 'USD/JPY'},
+                    {value: 'USD/CHF', text: 'USD/CHF'},
+                    {value: 'AUD/USD', text: 'AUD/USD'}
+                ];
+                pairs.forEach(pair => {
+                    const option = document.createElement('option');
+                    option.value = pair.value;
+                    option.textContent = pair.text;
+                    symbolSelect.appendChild(option);
+                });
+            } else if (dataType === 'commodities') {
+                const commodities = [
+                    {value: 'WTI', text: 'Crude Oil (WTI)'},
+                    {value: 'BRENT', text: 'Brent Oil'},
+                    {value: 'NATURAL_GAS', text: 'Natural Gas'},
+                    {value: 'COPPER', text: 'Copper'},
+                    {value: 'ALUMINUM', text: 'Aluminum'}
+                ];
+                commodities.forEach(commodity => {
+                    const option = document.createElement('option');
+                    option.value = commodity.value;
+                    option.textContent = commodity.text;
+                    symbolSelect.appendChild(option);
+                });
+            }
+        }
+
+        async function updateChart() {
+            const dataType = document.getElementById('dataType').value;
+            const symbol = document.getElementById('symbol').value;
+            const chartType = document.getElementById('chartType').value;
+            const timeRange = document.getElementById('timeRange').value;
+            
+            document.getElementById('chart').innerHTML = '<div class="loading">Loading chart data...</div>';
+            document.getElementById('volumeChart').innerHTML = '<div class="loading">Loading volume data...</div>';
+            
+            try {
+                const response = await fetch(`/api/data?type=${dataType}&symbol=${symbol}&range=${timeRange}`);
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                currentData = data;
+                renderChart(data, chartType, dataType);
+                if (dataType === 'stocks') {
+                    renderVolumeChart(data);
+                } else {
+                    document.getElementById('volumeChart').innerHTML = '';
+                }
+                
+            } catch (error) {
+                document.getElementById('chart').innerHTML = `<div class="loading">Error: ${error.message}</div>`;
+                document.getElementById('volumeChart').innerHTML = '';
+            }
+        }
+
+        function renderChart(data, chartType, dataType) {
+            const dates = data.dates;
+            const prices = data.prices;
+            
+            let trace;
+            
+            if (chartType === 'line') {
+                trace = {
+                    x: dates,
+                    y: prices.close,
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Close Price',
+                    line: { color: '#1f77b4', width: 2 }
+                };
+            } else if (chartType === 'candlestick') {
+                trace = {
+                    x: dates,
+                    open: prices.open,
+                    high: prices.high,
+                    low: prices.low,
+                    close: prices.close,
+                    type: 'candlestick',
+                    name: 'Candlestick'
+                };
+            } else if (chartType === 'ohlc') {
+                trace = {
+                    x: dates,
+                    open: prices.open,
+                    high: prices.high,
+                    low: prices.low,
+                    close: prices.close,
+                    type: 'ohlc',
+                    name: 'OHLC'
+                };
+            }
+            
+            const symbol = document.getElementById('symbol').value;
+            const yAxisTitle = dataType === 'forex' ? 'Exchange Rate' : dataType === 'commodities' ? 'Price' : 'Price ($)';
+            
+            const layout = {
+                title: `${symbol} ${dataType.charAt(0).toUpperCase() + dataType.slice(1)} Chart`,
+                xaxis: { title: 'Date', type: 'date' },
+                yaxis: { title: yAxisTitle },
+                template: isDark ? 'plotly_dark' : 'plotly_white',
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                margin: { t: 50, r: 50, b: 50, l: 50 }
+            };
+            
+            Plotly.newPlot('chart', [trace], layout, {responsive: true});
+        }
+
+        function renderVolumeChart(data) {
+            const trace = {
+                x: data.dates,
+                y: data.prices.volume,
+                type: 'bar',
+                name: 'Volume',
+                marker: { color: '#ff6b6b' }
+            };
+            
+            const layout = {
+                title: 'Trading Volume',
+                xaxis: { title: 'Date', type: 'date' },
+                yaxis: { title: 'Volume' },
+                template: isDark ? 'plotly_dark' : 'plotly_white',
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                margin: { t: 50, r: 50, b: 50, l: 50 }
+            };
+            
+            Plotly.newPlot('volumeChart', [trace], layout, {responsive: true});
+        }
+
+        function toggleTheme() {
+            isDark = !isDark;
+            document.body.style.background = isDark ? 
+                'linear-gradient(135deg, #232526 0%, #414345 100%)' : 
+                'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+            
+            const btn = document.querySelector('button[onclick="toggleTheme()"]');
+            btn.textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+            
+            if (currentData) {
+                const dataType = document.getElementById('dataType').value;
+                renderChart(currentData, document.getElementById('chartType').value, dataType);
+                if (dataType === 'stocks') {
+                    renderVolumeChart(currentData);
+                }
+            }
+        }
+    </script>
+</body>
+</html>
