@@ -94,8 +94,13 @@
         </div>
         
         <div class="chart-container">
-            <h2>💰 Equity Curve</h2>
+            <h2>💰 Equity Curve & Drawdown</h2>
             <div id="equityChart" style="height: 400px;"></div>
+        </div>
+        
+        <div class="chart-container">
+            <h2>📉 Drawdown Analysis</h2>
+            <div id="drawdownChart" style="height: 300px;"></div>
         </div>
         
         <div class="chart-container">
@@ -143,6 +148,7 @@
                 
                 renderMetrics();
                 renderEquityChart();
+                renderDrawdownChart();
                 renderPriceChart();
                 renderStrategyAnalysis();
                 renderTradesTable();
@@ -319,6 +325,67 @@
             
             html += '</tbody></table>';
             document.getElementById('tradesTable').innerHTML = html;
+        }
+        
+        function renderDrawdownChart() {
+            const equity = detailData.investment_metrics.equity_curve;
+            
+            // Calculate detailed drawdown metrics
+            const drawdown = [];
+            const drawdownDollar = [];
+            let peak = equity[0];
+            let peakIndex = 0;
+            let maxDrawdown = 0;
+            let maxDrawdownIndex = 0;
+            
+            for (let i = 0; i < equity.length; i++) {
+                if (equity[i] > peak) {
+                    peak = equity[i];
+                    peakIndex = i;
+                }
+                const ddPercent = ((equity[i] - peak) / peak) * 100;
+                const ddDollar = equity[i] - peak;
+                
+                drawdown.push(ddPercent);
+                drawdownDollar.push(ddDollar);
+                
+                if (ddPercent < maxDrawdown) {
+                    maxDrawdown = ddPercent;
+                    maxDrawdownIndex = i;
+                }
+            }
+            
+            const drawdownTrace = {
+                x: Array.from({length: drawdown.length}, (_, i) => i),
+                y: drawdown,
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Drawdown %',
+                line: { color: '#f44336', width: 2 },
+                fill: 'tozeroy',
+                fillcolor: 'rgba(244, 67, 54, 0.3)'
+            };
+            
+            const layout = {
+                title: `Drawdown Analysis (Max: ${maxDrawdown.toFixed(1)}% at trade ${maxDrawdownIndex})`,
+                xaxis: { title: 'Trade Number' },
+                yaxis: { title: 'Drawdown (%)' },
+                template: 'plotly_dark',
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                annotations: [{
+                    x: maxDrawdownIndex,
+                    y: maxDrawdown,
+                    text: `Max DD: ${maxDrawdown.toFixed(1)}%`,
+                    showarrow: true,
+                    arrowhead: 2,
+                    arrowcolor: '#f44336',
+                    bgcolor: 'rgba(244, 67, 54, 0.8)',
+                    bordercolor: '#f44336'
+                }]
+            };
+            
+            Plotly.newPlot('drawdownChart', [drawdownTrace], layout, {responsive: true});
         }
         
         function renderStrategyAnalysis() {
