@@ -86,8 +86,9 @@
         <div class="header">
             <h1>📈 Interactive Stock Dashboard</h1>
             <p>Real-time stock data with interactive controls</p>
-            <div style="margin-top: 20px; display: flex; gap: 15px; justify-content: center;">
+            <div style="margin-top: 20px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
                 <button onclick="updateChart()" style="padding: 12px 24px; background: #ff6b6b; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">🔄 Update Chart</button>
+                <button id="replayBtn" onclick="toggleReplay()" style="padding: 12px 24px; background: #28a745; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">▶️ Replay Market</button>
                 <button onclick="toggleTheme()" style="padding: 12px 24px; background: rgba(255,255,255,0.2); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">🌙 Dark Mode</button>
             </div>
         </div>
@@ -143,12 +144,75 @@
         let currentData = null;
         let isDark = false;
         let currentDataType = 'stocks';
+        let isReplaying = false;
+        let replayInterval = null;
+        let replayIndex = 0;
 
         // Initialize with default chart
         window.onload = function() {
             updateSymbolOptions();
             updateChart();
         };
+        
+        function toggleReplay() {
+            const btn = document.getElementById('replayBtn');
+            
+            if (isReplaying) {
+                // Stop replay
+                clearInterval(replayInterval);
+                isReplaying = false;
+                btn.textContent = '▶️ Replay Market';
+                btn.style.background = '#28a745';
+                
+                // Show full data again
+                if (currentData) {
+                    renderChart(currentData, document.getElementById('chartType').value, currentDataType);
+                    if (currentDataType === 'stocks') {
+                        renderVolumeChart(currentData);
+                    }
+                }
+            } else {
+                // Start replay
+                if (!currentData) {
+                    alert('Please load data first by updating the chart');
+                    return;
+                }
+                
+                isReplaying = true;
+                replayIndex = 10; // Start with first 10 data points
+                btn.textContent = '⏹️ Stop Replay';
+                btn.style.background = '#dc3545';
+                
+                // Start animation
+                replayInterval = setInterval(replayStep, 200); // 200ms per step
+            }
+        }
+        
+        function replayStep() {
+            if (!currentData || replayIndex >= currentData.dates.length) {
+                toggleReplay(); // Stop when done
+                return;
+            }
+            
+            // Create subset of data up to current index
+            const replayData = {
+                dates: currentData.dates.slice(0, replayIndex),
+                prices: {
+                    open: currentData.prices.open.slice(0, replayIndex),
+                    high: currentData.prices.high.slice(0, replayIndex),
+                    low: currentData.prices.low.slice(0, replayIndex),
+                    close: currentData.prices.close.slice(0, replayIndex),
+                    volume: currentData.prices.volume.slice(0, replayIndex)
+                }
+            };
+            
+            renderChart(replayData, document.getElementById('chartType').value, currentDataType);
+            if (currentDataType === 'stocks') {
+                renderVolumeChart(replayData);
+            }
+            
+            replayIndex++;
+        }
         
         function switchTab(dataType) {
             // Update active tab
