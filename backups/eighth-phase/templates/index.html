@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Market Data Visualization</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            transition: all 0.3s ease;
+            line-height: 1.6;
+        }
+        .light { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #333; }
+        .dark { background: linear-gradient(135deg, #232526 0%, #414345 100%); color: #f4f4f4; }
+        
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; margin-bottom: 40px; }
+        .header h1 { 
+            font-size: 3rem; 
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            color: white;
+        }
+        
+        .toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        .light .toggle { background: #fff; color: #333; }
+        .dark .toggle { background: #333; color: #fff; }
+        .toggle:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
+        
+        .section {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .section h2 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: white;
+            text-align: center;
+        }
+        
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .chart-item {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        .chart-item:hover { transform: translateY(-5px); }
+        
+        .chart-item h3 {
+            color: white;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+        
+        .chart-item img {
+            max-width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .interactive-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .interactive-links a {
+            display: inline-block;
+            padding: 15px 30px;
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .interactive-links a:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+            background: linear-gradient(45deg, #ee5a24, #ff6b6b);
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 { font-size: 2rem; }
+            .container { padding: 10px; }
+            .chart-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body class="light">
+    <button class="toggle" onclick="toggleMode()">🌙 Dark Mode</button>
+    
+    <div class="container">
+        <div class="header">
+            <h1>📈 Market Data Visualization</h1>
+            <p style="color: rgba(255,255,255,0.8); font-size: 1.1rem;">Real-time stock analysis with interactive charts</p>
+        </div>
+        
+
+        
+        <div class="section">
+            <h2>✨ Interactive Features</h2>
+            <div class="interactive-links">
+                <a href="/dashboard" target="_blank">🎛️ Interactive Dashboard</a>
+                <a href="/backtests" target="_blank">📈 Backtest Results</a>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function toggleMode() {
+            const body = document.body;
+            const btn = document.querySelector('.toggle');
+            if (body.classList.contains('light')) {
+                body.className = 'dark';
+                btn.textContent = '☀️ Light Mode';
+            } else {
+                body.className = 'light';
+                btn.textContent = '🌙 Dark Mode';
+            }
+        }
+    </script>
+</body>
+</html>

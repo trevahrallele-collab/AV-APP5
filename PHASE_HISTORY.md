@@ -4,15 +4,22 @@
 **Location**: `backups/seventh-place/`
 **Features**: Current stable state
 
+## Eighth Phase ✅
+**Location**: `backups/eighth-phase/`
+**Features**: Current stable state
+
 ## Current Phase 🚧
 **Status**: Active Development
-**Based on**: Seventh Place
+**Based on**: Eighth Phase
 **Next Steps**: Ready for new features or modifications
 
 ---
 
 ### How to Revert:
 ```bash
+# To revert to Eighth Phase:
+cp -r backups/eighth-phase/* .
+
 # To revert to Seventh Place:
 cp -r backups/seventh-place/* .
 ```
