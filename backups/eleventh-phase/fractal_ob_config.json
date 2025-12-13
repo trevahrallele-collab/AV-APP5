@@ -1,0 +1,19 @@
+{
+    "name": "Fractal + Order Block Strategy",
+    "description": "Combined Bill Williams fractals with Smart Money Concepts order blocks for enhanced entry precision",
+    "parameters": {
+        "left_bars": 2,
+        "right_bars": 2,
+        "lookback": 20,
+        "ema_period": 50,
+        "atr_period": 14,
+        "atr_mult_stop": 2.0,
+        "impulse_bars": 3,
+        "min_body_ratio": 0.3,
+        "risk_per_trade": 0.01
+    },
+    "ui_settings": {
+        "color": "#9c27b0",
+        "icon": "🔺📊"
+    }
+}

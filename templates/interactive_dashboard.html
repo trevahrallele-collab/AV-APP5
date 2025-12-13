@@ -5,51 +5,104 @@
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         body { 
-            font-family: 'Segoe UI', sans-serif;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             color: white;
+            overflow-x: hidden;
         }
         .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
-        .header { text-align: center; margin-bottom: 30px; }
+        .header { 
+            text-align: center; 
+            margin-bottom: 40px;
+            position: relative;
+        }
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 4px;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1);
+            border-radius: 2px;
+        }
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #fff 0%, #f0f0f0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
         .tabs {
             display: flex;
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            margin-bottom: 20px;
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            margin-bottom: 25px;
             overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.15);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
         }
         .tab {
             flex: 1;
-            padding: 15px 20px;
+            padding: 18px 25px;
             text-align: center;
             cursor: pointer;
-            background: rgba(255,255,255,0.1);
+            background: transparent;
             border: none;
-            color: white;
-            font-weight: bold;
-            transition: all 0.3s ease;
+            color: rgba(255,255,255,0.8);
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+        .tab::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #4ecdc4, #44a08d);
+            transition: width 0.3s ease;
         }
         .tab.active {
-            background: rgba(255,255,255,0.3);
-            color: #333;
+            background: rgba(255,255,255,0.15);
+            color: white;
+        }
+        .tab.active::before {
+            width: 80%;
         }
         .tab:hover {
-            background: rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.1);
+            color: white;
         }
         .controls {
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 30px;
+            margin-bottom: 25px;
             display: flex;
-            gap: 20px;
+            gap: 25px;
             flex-wrap: wrap;
             align-items: center;
             justify-content: center;
+            border: 1px solid rgba(255,255,255,0.15);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
         .control-group {
             display: flex;
@@ -72,12 +125,28 @@
         }
         button:hover { background: #ee5a24; transform: translateY(-2px); }
         .chart-container {
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 30px;
+            margin-bottom: 25px;
             position: relative;
+            border: 1px solid rgba(255,255,255,0.15);
+            transition: all 0.3s ease;
+        }
+        .chart-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1);
+            border-radius: 25px 25px 0 0;
+        }
+        .chart-container:hover {
+            background: rgba(255,255,255,0.12);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
         }
         .chart-container.fullscreen {
             position: fixed;

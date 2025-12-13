@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ symbol.replace('_', '/') }} ({{ data_type.upper() }}) - Detailed Analysis</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+            padding: 20px;
+            transition: all 0.3s ease;
+            overflow-x: hidden;
+        }
+        body.dark {
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
+        }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        .container { max-width: 1400px; margin: 0 auto; }
+        .header { 
+            text-align: center; 
+            margin-bottom: 40px;
+            position: relative;
+        }
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 4px;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1);
+            border-radius: 2px;
+        }
+        .header h1 { 
+            font-size: 3rem; 
+            margin-bottom: 15px;
+            font-weight: 700;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            background: linear-gradient(135deg, #fff 0%, #f0f0f0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+        .nav-btn {
+            display: inline-block;
+            padding: 14px 28px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            margin: 8px;
+            border: 2px solid rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 0.95rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .nav-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        .nav-btn:hover::before {
+            left: 100%;
+        }
+        .nav-btn:hover { 
+            background: rgba(255,255,255,0.2);
+            border-color: rgba(255,255,255,0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .metric-card {
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 25px 20px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.15);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+        }
+        .metric-card:hover {
+            background: rgba(255,255,255,0.15);
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            border-color: rgba(255,255,255,0.3);
+        }
+        .metric-value { 
+            font-size: 2.2rem; 
+            font-weight: 700; 
+            margin-bottom: 8px;
+            line-height: 1.2;
+        }
+        .metric-label { 
+            font-size: 0.85rem; 
+            opacity: 0.8;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .positive { 
+            color: #4ecdc4;
+            text-shadow: 0 0 10px rgba(78, 205, 196, 0.5);
+        }
+        .negative { 
+            color: #ff6b6b;
+            text-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+        }
+        .chart-container {
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 30px;
+            margin: 25px 0;
+            border: 1px solid rgba(255,255,255,0.15);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .chart-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1);
+            border-radius: 25px 25px 0 0;
+        }
+        .chart-container:hover {
+            background: rgba(255,255,255,0.12);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        .chart-container h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: rgba(255,255,255,0.95);
+        }
+        .trades-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .trades-table th, .trades-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .trades-table th {
+            background: rgba(255,255,255,0.1);
+            font-weight: bold;
+        }
+        .trades-table tr:hover {
+            background: rgba(255,255,255,0.05);
+        }
+        .loading { text-align: center; padding: 50px; font-size: 18px; }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(25px);
+            margin: 15% auto;
+            padding: 35px;
+            border-radius: 25px;
+            width: 450px;
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        .modal input {
+            width: 100%;
+            padding: 15px 20px;
+            margin: 12px 0;
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 15px;
+            font-size: 16px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        .modal input:focus {
+            outline: none;
+            border-color: #4ecdc4;
+            background: rgba(255,255,255,0.15);
+            box-shadow: 0 0 20px rgba(78, 205, 196, 0.3);
+        }
+        .modal input::placeholder {
+            color: rgba(255,255,255,0.6);
+        }
+        .modal button {
+            padding: 15px 30px;
+            margin: 8px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-primary { 
+            background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(78, 205, 196, 0.4);
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(78, 205, 196, 0.6);
+        }
+        .btn-secondary { 
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 {{ symbol.replace('_', '/') }} ({{ data_type.upper() }})</h1>
+            <p>Comprehensive Trading Analysis</p>
+            <a href="/backtests" class="nav-btn">← Back to Results</a>
+            <a href="/" class="nav-btn">🏠 Main</a>
+            <a href="/dashboard" class="nav-btn">📈 Dashboard</a>
+            <button onclick="toggleTheme()" class="nav-btn">🌙 Dark Mode</button>
+            <button onclick="showColorWheel()" class="nav-btn" style="background: #ff6b6b;">🎨 Colors</button>
+            <button onclick="showRecalcModal()" class="nav-btn" style="background: #28a745;">🔄 Recalculate</button>
+        </div>
+        
+        <div class="metrics-grid" id="metricsGrid">
+            <div class="loading">Loading investment metrics...</div>
+        </div>
+        
+        <div class="chart-container">
+            <h2>💰 Equity Curve & Drawdown</h2>
+            <div id="equityChart" style="height: 400px;"></div>
+        </div>
+        
+        <div class="chart-container">
+            <h2>📉 Drawdown Analysis</h2>
+            <div id="drawdownChart" style="height: 300px;"></div>
+        </div>
+        
+        <div class="chart-container">
+            <h2>📈 Price Chart with Trade Markers</h2>
+            <div id="priceChart" style="height: 500px;"></div>
+        </div>
+        
+        <div class="chart-container">
+            <h2>📈 Strategy Analysis</h2>
+            <div id="strategyAnalysis">
+                <div class="loading">Analyzing strategy performance...</div>
+            </div>
+        </div>
+        
+        <div class="chart-container">
+            <h2 onclick="toggleTradeDetails()" style="cursor: pointer; user-select: none;">📋 Trade Details & Market Conditions <span id="toggleIcon">▼</span></h2>
+            <div id="tradesTable" style="display: block;">
+                <div class="loading">Loading trade details...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recalculation Modal -->
+    <div id="recalcModal" class="modal">
+        <div class="modal-content">
+            <h3>🔄 Recalculate Investment Metrics</h3>
+            <label>Starting Capital ($):</label>
+            <input type="number" id="newCapital" value="10000" min="1000" step="1000">
+            <label>Risk Per Trade ($):</label>
+            <input type="number" id="newRisk" value="100" min="10" step="10">
+            <div style="margin-top: 20px;">
+                <button class="btn-primary" onclick="recalculate()">🔄 Recalculate</button>
+                <button class="btn-secondary" onclick="closeRecalcModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Color Wheel Modal -->
+    <div id="colorModal" class="modal">
+        <div class="modal-content" style="width: 500px;">
+            <h3>🎨 Background Colors</h3>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 30px; margin: 20px 0;">
+                <div class="color-wheel" id="colorWheel2" style="width: 120px; height: 120px; background: conic-gradient(from 0deg, #ff0000, #ff8000, #ffff00, #80ff00, #00ff00, #00ff80, #00ffff, #0080ff, #0000ff, #8000ff, #ff00ff, #ff0080, #ff0000); border-radius: 50%; cursor: pointer; position: relative;">
+                    <div id="wheelPointer2" style="position: absolute; top: 5px; left: 50%; transform: translateX(-50%); width: 15px; height: 15px; background: white; border-radius: 50%; border: 2px solid #333;"></div>
+                </div>
+                <div>
+                    <input type="range" id="lightnessSlider2" min="0" max="100" value="50" style="width: 120px; margin-bottom: 10px;">
+                    <div style="text-align: center; color: white; font-size: 0.9rem;">Lightness</div>
+                </div>
+                <div id="colorPreview2" style="width: 60px; height: 60px; border-radius: 10px; background: #4ecdc4; border: 2px solid white;"></div>
+            </div>
+            <div style="margin-top: 20px;">
+                <button class="btn-primary" onclick="applyBackground2()">🎨 Apply</button>
+                <button onclick="resetBackground2()" style="padding: 15px 30px; margin: 8px; border: none; border-radius: 50px; cursor: pointer; font-weight: 600; background: linear-gradient(135deg, #ff6b6b, #ee5a24); color: white;">🔄 Reset</button>
+                <button class="btn-secondary" onclick="closeColorModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let detailData = null;
+        const dataType = '{{ data_type }}';
+        const symbol = '{{ symbol }}';
+
+        window.onload = function() {
+            loadDetailData();
+        };
+
+        async function loadDetailData() {
+            try {
+                // Get admin settings from URL parameters or use defaults
+                const urlParams = new URLSearchParams(window.location.search);
+                const startingCapital = parseFloat(urlParams.get('capital')) || 10000;
+                const riskPerTrade = parseFloat(urlParams.get('risk')) || 100;
+                
+                // Update URL to show current settings
+                const newUrl = `/backtest/${dataType}/${symbol}?capital=${startingCapital}&risk=${riskPerTrade}`;
+                if (window.location.href !== window.location.origin + newUrl) {
+                    window.history.replaceState({}, '', newUrl);
+                }
+                
+                const response = await fetch(`/api/backtest-detail/${dataType}/${symbol}?capital=${startingCapital}&risk=${riskPerTrade}`);
+                detailData = await response.json();
+                
+                if (detailData.error) {
+                    throw new Error(detailData.error);
+                }
+                
+                renderMetrics();
+                renderEquityChart();
+                renderDrawdownChart();
+                renderPriceChart();
+                renderStrategyAnalysis();
+                renderTradesTable();
+                
+            } catch (error) {
+                document.getElementById('metricsGrid').innerHTML = `<div class="loading">Error: ${error.message}</div>`;
+            }
+        }
+
+        function renderMetrics() {
+            const metrics = detailData.investment_metrics;
+            const summary = detailData.backtest.summary;
+            
+            document.getElementById('metricsGrid').innerHTML = `
+                <div class="metric-card">
+                    <div class="metric-value">$${metrics.starting_capital.toLocaleString()}</div>
+                    <div class="metric-label">Starting Capital</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">$${metrics.risk_per_trade}</div>
+                    <div class="metric-label">Risk Per Trade</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">$${Math.abs(metrics.total_return).toLocaleString()}</div>
+                    <div class="metric-label">${metrics.total_return >= 0 ? 'Total Profit' : 'Total Loss'}</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value ${metrics.roi_percent >= 0 ? 'positive' : 'negative'}">${metrics.roi_percent.toFixed(1)}%</div>
+                    <div class="metric-label">ROI</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">$${metrics.final_capital.toLocaleString()}</div>
+                    <div class="metric-label">Final Capital</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">${summary.num_trades}</div>
+                    <div class="metric-label">Total Trades</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">${(summary.win_rate_pos_R * 100).toFixed(1)}%</div>
+                    <div class="metric-label">Win Rate</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value ${summary.avg_outcome_R >= 0 ? 'positive' : 'negative'}">${summary.avg_outcome_R.toFixed(2)}R</div>
+                    <div class="metric-label">Avg Return</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value ${metrics.total_return >= 0 ? 'positive' : 'negative'}">$${Math.abs(metrics.total_return).toLocaleString()}</div>
+                    <div class="metric-label">${metrics.total_return >= 0 ? 'Total Profit' : 'Total Loss'}</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value ${metrics.max_drawdown_percent >= -10 ? 'positive' : 'negative'}">${metrics.max_drawdown_percent.toFixed(1)}%</div>
+                    <div class="metric-label">Max Drawdown</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value ${metrics.sharpe_ratio >= 1 ? 'positive' : 'negative'}">${metrics.sharpe_ratio.toFixed(2)}</div>
+                    <div class="metric-label">Sharpe Ratio</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value ${metrics.sortino_ratio >= 1 ? 'positive' : 'negative'}">${metrics.sortino_ratio >= 999 ? '∞' : metrics.sortino_ratio.toFixed(2)}</div>
+                    <div class="metric-label">Sortino Ratio</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value ${metrics.calmar_ratio >= 1 ? 'positive' : 'negative'}">${metrics.calmar_ratio >= 999 ? '∞' : metrics.calmar_ratio.toFixed(2)}</div>
+                    <div class="metric-label">Calmar Ratio</div>
+                </div>
+            `;
+        }
+
+        function renderEquityChart() {
+            const equity = detailData.investment_metrics.equity_curve;
+            const trades = detailData.backtest.trades;
+            
+            const trace = {
+                x: Array.from({length: equity.length}, (_, i) => i),
+                y: equity,
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Equity',
+                line: { color: '#4caf50', width: 3 }
+            };
+            
+            const layout = {
+                title: 'Portfolio Equity Curve',
+                xaxis: { title: 'Trade Number' },
+                yaxis: { title: 'Portfolio Value ($)' },
+                template: 'plotly_dark',
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)'
+            };
+            
+            Plotly.newPlot('equityChart', [trace], layout, {responsive: true});
+        }
+
+        function renderPriceChart() {
+            const priceData = detailData.price_data;
+            const trades = detailData.backtest.trades;
+            
+            // Main price trace
+            const priceTrace = {
+                x: priceData.dates,
+                open: priceData.prices.open,
+                high: priceData.prices.high,
+                low: priceData.prices.low,
+                close: priceData.prices.close,
+                type: 'candlestick',
+                name: 'Price'
+            };
+            
+            // Trade entry markers
+            const entryDates = trades.map(t => t.entry_date);
+            const entryPrices = trades.map(t => t.entry);
+            const entryColors = trades.map(t => t.type === 'Bullish' ? 'green' : 'red');
+            
+            const entryTrace = {
+                x: entryDates,
+                y: entryPrices,
+                mode: 'markers',
+                type: 'scatter',
+                name: 'Trade Entries',
+                marker: {
+                    size: 10,
+                    color: entryColors,
+                    symbol: 'triangle-up'
+                }
+            };
+            
+            const layout = {
+                title: 'Price Chart with Trade Entries',
+                xaxis: { title: 'Date' },
+                yaxis: { title: 'Price' },
+                template: 'plotly_dark',
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)'
+            };
+            
+            Plotly.newPlot('priceChart', [priceTrace, entryTrace], layout, {responsive: true});
+        }
+
+        function renderTradesTable() {
+            const trades = detailData.backtest.trades;
+            const riskPerTrade = detailData.investment_metrics.risk_per_trade;
+            
+            let html = `
+                <table class="trades-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Type</th>
+                            <th>Entry Date</th>
+                            <th>Entry Price</th>
+                            <th>Stop Loss</th>
+                            <th>R Size</th>
+                            <th>Outcome (R)</th>
+                            <th>P&L ($)</th>
+                            <th>Market Note</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            trades.forEach((trade, index) => {
+                const pnl = trade.outcome_R * riskPerTrade;
+                const outcomeClass = trade.outcome_R >= 0 ? 'positive' : 'negative';
+                
+                // Generate market condition note
+                let marketNote = '';
+                if (trade.outcome_R >= 1.5) {
+                    marketNote = '🟢 Strong trend continuation';
+                } else if (trade.outcome_R >= 0.5) {
+                    marketNote = '🟡 Good market conditions';
+                } else if (trade.outcome_R >= 0) {
+                    marketNote = '🟠 Weak follow-through';
+                } else if (trade.outcome_R >= -0.5) {
+                    marketNote = '🟠 Minor reversal';
+                } else {
+                    marketNote = '🔴 Strong counter-trend';
+                }
+                
+                html += `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${trade.type}</td>
+                        <td>${new Date(trade.entry_date).toLocaleDateString()}</td>
+                        <td>${trade.entry.toFixed(5)}</td>
+                        <td>${trade.stop.toFixed(5)}</td>
+                        <td>${trade.R.toFixed(5)}</td>
+                        <td class="${outcomeClass}">${trade.outcome_R.toFixed(2)}R</td>
+                        <td class="${outcomeClass}">$${pnl.toFixed(2)}</td>
+                        <td>${marketNote}</td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table>';
+            document.getElementById('tradesTable').innerHTML = html;
+        }
+        
+        function renderDrawdownChart() {
+            const equity = detailData.investment_metrics.equity_curve;
+            
+            // Calculate detailed drawdown metrics
+            const drawdown = [];
+            const drawdownDollar = [];
+            let peak = equity[0];
+            let peakIndex = 0;
+            let maxDrawdown = 0;
+            let maxDrawdownIndex = 0;
+            
+            for (let i = 0; i < equity.length; i++) {
+                if (equity[i] > peak) {
+                    peak = equity[i];
+                    peakIndex = i;
+                }
+                const ddPercent = ((equity[i] - peak) / peak) * 100;
+                const ddDollar = equity[i] - peak;
+                
+                drawdown.push(ddPercent);
+                drawdownDollar.push(ddDollar);
+                
+                if (ddPercent < maxDrawdown) {
+                    maxDrawdown = ddPercent;
+                    maxDrawdownIndex = i;
+                }
+            }
+            
+            const drawdownTrace = {
+                x: Array.from({length: drawdown.length}, (_, i) => i),
+                y: drawdown,
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Drawdown %',
+                line: { color: '#f44336', width: 2 },
+                fill: 'tozeroy',
+                fillcolor: 'rgba(244, 67, 54, 0.3)'
+            };
+            
+            const layout = {
+                title: `Drawdown Analysis (Max: ${maxDrawdown.toFixed(1)}% at trade ${maxDrawdownIndex})`,
+                xaxis: { title: 'Trade Number' },
+                yaxis: { title: 'Drawdown (%)' },
+                template: 'plotly_dark',
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                annotations: [{
+                    x: maxDrawdownIndex,
+                    y: maxDrawdown,
+                    text: `Max DD: ${maxDrawdown.toFixed(1)}%`,
+                    showarrow: true,
+                    arrowhead: 2,
+                    arrowcolor: '#f44336',
+                    bgcolor: 'rgba(244, 67, 54, 0.8)',
+                    bordercolor: '#f44336'
+                }]
+            };
+            
+            Plotly.newPlot('drawdownChart', [drawdownTrace], layout, {responsive: true});
+        }
+        
+        function renderStrategyAnalysis() {
+            const summary = detailData.backtest.summary;
+            const trades = detailData.backtest.trades;
+            const priceData = detailData.price_data;
+            const metrics = detailData.investment_metrics;
+            
+            // Calculate data range
+            const startDate = new Date(priceData.dates[0]).toLocaleDateString();
+            const endDate = new Date(priceData.dates[priceData.dates.length - 1]).toLocaleDateString();
+            const totalDays = Math.ceil((new Date(priceData.dates[priceData.dates.length - 1]) - new Date(priceData.dates[0])) / (1000 * 60 * 60 * 24));
+            
+            // Analyze losing trades
+            const losingTrades = trades.filter(t => t.outcome_R < 0);
+            const winningTrades = trades.filter(t => t.outcome_R > 0);
+            
+            // Strategy evaluation
+            let strategyRating = 'Poor';
+            let strategyColor = '#f44336';
+            let strategyIcon = '❌';
+            
+            if (summary.win_rate_pos_R >= 0.7 && summary.avg_outcome_R > 0.5) {
+                strategyRating = 'Excellent';
+                strategyColor = '#4caf50';
+                strategyIcon = '🏆';
+            } else if (summary.win_rate_pos_R >= 0.6 && summary.avg_outcome_R > 0.2) {
+                strategyRating = 'Good';
+                strategyColor = '#8bc34a';
+                strategyIcon = '✅';
+            } else if (summary.win_rate_pos_R >= 0.5 && summary.avg_outcome_R > 0) {
+                strategyRating = 'Average';
+                strategyColor = '#ff9800';
+                strategyIcon = '⚠️';
+            }
+            
+            // Market condition analysis
+            const priceStart = priceData.prices.close[0];
+            const priceEnd = priceData.prices.close[priceData.prices.close.length - 1];
+            const marketTrend = priceEnd > priceStart ? 'Bullish' : 'Bearish';
+            const trendPercent = ((priceEnd - priceStart) / priceStart * 100).toFixed(1);
+            
+            document.getElementById('strategyAnalysis').innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                    
+                    <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px;">
+                        <h3>📊 Data Range</h3>
+                        <p><strong>Period:</strong> ${startDate} to ${endDate}</p>
+                        <p><strong>Duration:</strong> ${totalDays} days (${(totalDays/365).toFixed(1)} years)</p>
+                        <p><strong>Total Candles:</strong> ${priceData.dates.length}</p>
+                        <p><strong>Market Trend:</strong> ${marketTrend} (${trendPercent > 0 ? '+' : ''}${trendPercent}%)</p>
+                    </div>
+                    
+                    <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px;">
+                        <h3>${strategyIcon} Strategy Evaluation</h3>
+                        <p><strong>Rating:</strong> <span style="color: ${strategyColor}; font-weight: bold;">${strategyRating}</span></p>
+                        <p><strong>Win Rate:</strong> ${(summary.win_rate_pos_R * 100).toFixed(1)}%</p>
+                        <p><strong>Average Return:</strong> ${summary.avg_outcome_R.toFixed(2)}R</p>
+                        <p><strong>ROI:</strong> ${metrics.roi_percent.toFixed(1)}%</p>
+                        <p><strong>Max Drawdown:</strong> ${metrics.max_drawdown_percent.toFixed(1)}%</p>
+                    </div>
+                    
+                    <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px;">
+                        <h3>📉 Risk-Adjusted Returns</h3>
+                        <p><strong>Sharpe Ratio:</strong> ${metrics.sharpe_ratio >= 999 ? '∞ (Perfect)' : metrics.sharpe_ratio.toFixed(2)} ${metrics.sharpe_ratio >= 2 ? '(Excellent)' : metrics.sharpe_ratio >= 1 ? '(Good)' : '(Poor)'}</p>
+                        <p><strong>Sortino Ratio:</strong> ${metrics.sortino_ratio >= 999 ? '∞ (Perfect)' : metrics.sortino_ratio.toFixed(2)} ${metrics.sortino_ratio >= 2 ? '(Excellent)' : metrics.sortino_ratio >= 1 ? '(Good)' : '(Poor)'}</p>
+                        <p><strong>Calmar Ratio:</strong> ${metrics.calmar_ratio >= 999 ? '∞ (Perfect)' : metrics.calmar_ratio.toFixed(2)} ${metrics.calmar_ratio >= 1 ? '(Good)' : '(Poor)'}</p>
+                        <p style="font-size: 0.9em; opacity: 0.8; margin-top: 10px;">Higher ratios indicate better risk-adjusted performance</p>
+                    </div>
+                    
+                    <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px;">
+                        <h3>📈 Trade Breakdown</h3>
+                        <p><strong>Winning Trades:</strong> ${winningTrades.length} (${(winningTrades.length/trades.length*100).toFixed(1)}%)</p>
+                        <p><strong>Losing Trades:</strong> ${losingTrades.length} (${(losingTrades.length/trades.length*100).toFixed(1)}%)</p>
+                        <p><strong>Best Trade:</strong> ${Math.max(...trades.map(t => t.outcome_R)).toFixed(2)}R</p>
+                        <p><strong>Worst Trade:</strong> ${Math.min(...trades.map(t => t.outcome_R)).toFixed(2)}R</p>
+                    </div>
+                    
+                </div>
+                
+                <div style="margin-top: 20px; background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px;">
+                    <h3>🔍 Market Conditions & Drawdown Analysis</h3>
+                    <p><strong>Overall Market:</strong> The ${marketTrend.toLowerCase()} market trend (${trendPercent > 0 ? '+' : ''}${trendPercent}%) ${marketTrend === 'Bullish' ? 'favored long positions' : 'favored short positions'}.</p>
+                    
+                    <p><strong>Drawdown Analysis:</strong> Maximum drawdown of ${metrics.max_drawdown_percent.toFixed(1)}% ${metrics.max_drawdown_percent > -10 ? 'shows good risk control' : metrics.max_drawdown_percent > -20 ? 'indicates moderate risk' : 'suggests high risk exposure'}. ${metrics.max_drawdown_percent > -5 ? 'Excellent capital preservation.' : metrics.max_drawdown_percent > -15 ? 'Acceptable risk levels for most investors.' : 'High drawdown may require position size reduction.'}</p>
+                    
+                    ${losingTrades.length > 0 ? `
+                    <p><strong>Losing Trades Analysis:</strong> ${losingTrades.length} trades resulted in losses. Common factors:</p>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li>• ${losingTrades.filter(t => t.type === 'Bullish').length} bullish trades failed (${(losingTrades.filter(t => t.type === 'Bullish').length/losingTrades.length*100).toFixed(0)}% of losses)</li>
+                        <li>• ${losingTrades.filter(t => t.type === 'Bearish').length} bearish trades failed (${(losingTrades.filter(t => t.type === 'Bearish').length/losingTrades.length*100).toFixed(0)}% of losses)</li>
+                        <li>• Average loss per failed trade: ${(losingTrades.reduce((sum, t) => sum + t.outcome_R, 0) / losingTrades.length).toFixed(2)}R</li>
+                    </ul>
+                    ` : '<p><strong>Perfect Record:</strong> No losing trades in this period! 🎉</p>'}
+                    
+                    <p><strong>Ratio Analysis:</strong></p>
+                    <ul style="margin-left: 20px; margin-top: 5px;">
+                        <li>• <strong>Sharpe Ratio (${metrics.sharpe_ratio.toFixed(2)}):</strong> ${metrics.sharpe_ratio >= 2 ? 'Excellent risk-adjusted returns. Strategy efficiently converts risk into returns.' : metrics.sharpe_ratio >= 1 ? 'Good risk-adjusted performance. Returns justify the volatility.' : metrics.sharpe_ratio >= 0 ? 'Positive but low risk-adjusted returns. Consider optimization.' : 'Poor risk-adjusted performance. Strategy may be too volatile.'}</li>
+                        <li>• <strong>Sortino Ratio (${metrics.sortino_ratio >= 999 ? '∞' : metrics.sortino_ratio.toFixed(2)}):</strong> ${metrics.sortino_ratio >= 999 ? 'Perfect - no downside volatility!' : metrics.sortino_ratio >= 2 ? 'Excellent downside risk management.' : metrics.sortino_ratio >= 1 ? 'Good protection against losses.' : 'High downside volatility relative to returns.'}</li>
+                        <li>• <strong>Calmar Ratio (${metrics.calmar_ratio >= 999 ? '∞' : metrics.calmar_ratio.toFixed(2)}):</strong> ${metrics.calmar_ratio >= 999 ? 'Perfect - no drawdown!' : metrics.calmar_ratio >= 1 ? 'Returns adequately compensate for maximum drawdown risk.' : 'Returns may not justify the maximum drawdown experienced.'}</li>
+                    </ul>
+                    
+                    <p style="margin-top: 15px;"><strong>Strategy Recommendation:</strong> 
+                    ${strategyRating === 'Excellent' ? 'This strategy shows excellent performance with strong risk-adjusted returns. Consider increasing position size within risk tolerance.' :
+                      strategyRating === 'Good' ? 'Solid strategy with good returns and acceptable risk metrics. Monitor for consistency over longer periods.' :
+                      strategyRating === 'Average' ? 'Strategy needs optimization. Focus on improving risk-adjusted returns and reducing drawdowns.' :
+                      'Strategy underperforming with poor risk metrics. Significant improvements needed or consider alternative approaches.'}
+                    </p>
+                </div>
+            `;
+        }
+        
+        function toggleTheme() {
+            document.body.classList.toggle('dark');
+            const btn = document.querySelector('button[onclick="toggleTheme()"]');
+            btn.textContent = document.body.classList.contains('dark') ? '☀️ Light Mode' : '🌙 Dark Mode';
+            
+            // Reapply custom background if exists
+            const savedBg = localStorage.getItem('customBg');
+            if (savedBg) {
+                document.body.style.background = savedBg;
+            }
+        }
+        
+        function toggleTradeDetails() {
+            const table = document.getElementById('tradesTable');
+            const icon = document.getElementById('toggleIcon');
+            
+            if (table.style.display === 'none') {
+                table.style.display = 'block';
+                icon.textContent = '▼';
+            } else {
+                table.style.display = 'none';
+                icon.textContent = '▶';
+            }
+        }
+        
+        function showRecalcModal() {
+            // Pre-fill with current values
+            const urlParams = new URLSearchParams(window.location.search);
+            document.getElementById('newCapital').value = urlParams.get('capital') || 10000;
+            document.getElementById('newRisk').value = urlParams.get('risk') || 100;
+            document.getElementById('recalcModal').style.display = 'block';
+        }
+        
+        function closeRecalcModal() {
+            document.getElementById('recalcModal').style.display = 'none';
+        }
+        
+        async function recalculate() {
+            const newCapital = document.getElementById('newCapital').value;
+            const newRisk = document.getElementById('newRisk').value;
+            
+            closeRecalcModal();
+            
+            // Show loading state
+            document.getElementById('metricsGrid').innerHTML = '<div class="loading">Recalculating...</div>';
+            
+            try {
+                // Fetch new data with updated parameters
+                const response = await fetch(`/api/backtest-detail/${dataType}/${symbol}?capital=${newCapital}&risk=${newRisk}`);
+                detailData = await response.json();
+                
+                if (detailData.error) {
+                    throw new Error(detailData.error);
+                }
+                
+                // Update URL without reload
+                const newUrl = `/backtest/${dataType}/${symbol}?capital=${newCapital}&risk=${newRisk}`;
+                window.history.replaceState({}, '', newUrl);
+                
+                // Re-render all components with new data
+                renderMetrics();
+                renderEquityChart();
+                renderDrawdownChart();
+                renderPriceChart();
+                renderStrategyAnalysis();
+                renderTradesTable();
+                
+            } catch (error) {
+                document.getElementById('metricsGrid').innerHTML = `<div class="loading">Error: ${error.message}</div>`;
+            }
+        }
+        
+        let currentHue2 = 176;
+        let currentLightness2 = 60;
+        
+        function showColorWheel() {
+            document.getElementById('colorModal').style.display = 'block';
+        }
+        
+        function closeColorModal() {
+            document.getElementById('colorModal').style.display = 'none';
+        }
+        
+        function hslToHex(h, s, l) {
+            l /= 100;
+            const a = s * Math.min(l, 1 - l) / 100;
+            const f = n => {
+                const k = (n + h / 30) % 12;
+                const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+                return Math.round(255 * color).toString(16).padStart(2, '0');
+            };
+            return `#${f(0)}${f(8)}${f(4)}`;
+        }
+        
+        function updateColor2() {
+            const hex = hslToHex(currentHue2, 61, currentLightness2);
+            document.getElementById('colorPreview2').style.background = hex;
+        }
+        
+        function applyBackground2() {
+            const color1 = hslToHex(currentHue2, 61, Math.max(currentLightness2 - 20, 10));
+            const color2 = hslToHex((currentHue2 + 30) % 360, 61, Math.min(currentLightness2 + 20, 90));
+            const gradient = `linear-gradient(135deg, ${color1} 0%, ${color2} 100%)`;
+            
+            document.body.style.background = gradient;
+            localStorage.setItem('customBg', gradient);
+            closeColorModal();
+        }
+        
+        function resetBackground2() {
+            localStorage.removeItem('customBg');
+            document.body.style.background = '';
+            document.body.className = document.body.classList.contains('dark') ? 'dark' : 'light';
+            closeColorModal();
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load saved background
+            const savedBg = localStorage.getItem('customBg');
+            if (savedBg) {
+                document.body.style.background = savedBg;
+            }
+            
+            // Color wheel functionality
+            const wheel2 = document.getElementById('colorWheel2');
+            const slider2 = document.getElementById('lightnessSlider2');
+            
+            if (wheel2) {
+                let isDragging2 = false;
+                
+                function handleColorChange2(e) {
+                    const rect = wheel2.getBoundingClientRect();
+                    const centerX = rect.left + rect.width / 2;
+                    const centerY = rect.top + rect.height / 2;
+                    const angle = Math.atan2(e.clientY - centerY, e.clientX - centerX);
+                    const degrees = (angle * 180 / Math.PI + 90 + 360) % 360;
+                    
+                    currentHue2 = Math.round(degrees);
+                    const pointer = document.getElementById('wheelPointer2');
+                    pointer.style.transform = `translateX(-50%) rotate(${degrees}deg)`;
+                    pointer.style.transformOrigin = '50% 55px';
+                    updateColor2();
+                }
+                
+                wheel2.addEventListener('mousedown', function(e) {
+                    isDragging2 = true;
+                    handleColorChange2(e);
+                });
+                
+                wheel2.addEventListener('mousemove', function(e) {
+                    if (isDragging2) {
+                        handleColorChange2(e);
+                    }
+                });
+                
+                document.addEventListener('mouseup', function() {
+                    isDragging2 = false;
+                });
+            }
+            
+            if (slider2) {
+                slider2.addEventListener('input', function(e) {
+                    currentLightness2 = parseInt(e.target.value);
+                    updateColor2();
+                });
+            }
+            
+            updateColor2();
+        });
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const recalcModal = document.getElementById('recalcModal');
+            const colorModal = document.getElementById('colorModal');
+            if (event.target === recalcModal) {
+                closeRecalcModal();
+            }
+            if (event.target === colorModal) {
+                closeColorModal();
+            }
+        }
+    </script>
+</body>
+</html>

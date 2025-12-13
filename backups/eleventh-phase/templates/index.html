@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Market Data Visualization</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        .light { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #333; }
+        .dark { background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%); color: #f4f4f4; }
+        
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .header { 
+            text-align: center; 
+            margin-bottom: 50px;
+            position: relative;
+        }
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 4px;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+            border-radius: 2px;
+        }
+        .header h1 { 
+            font-size: 3.5rem; 
+            margin-bottom: 15px;
+            font-weight: 700;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            background: linear-gradient(135deg, #fff 0%, #f0f0f0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: titleGlow 3s ease-in-out infinite alternate;
+        }
+        @keyframes titleGlow {
+            from { text-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+            to { text-shadow: 0 4px 30px rgba(255,255,255,0.2); }
+        }
+        .header p {
+            font-size: 1.2rem;
+            font-weight: 300;
+            opacity: 0.9;
+        }
+        
+        .toggle {
+            position: fixed;
+            top: 25px;
+            right: 25px;
+            padding: 15px 25px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            backdrop-filter: blur(20px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+        .light .toggle { 
+            background: rgba(255,255,255,0.15); 
+            color: white;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        .dark .toggle { 
+            background: rgba(255,255,255,0.1); 
+            color: white;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+        .toggle:hover { 
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 12px 35px rgba(0,0,0,0.25);
+            background: rgba(255,255,255,0.25);
+        }
+        
+        .section {
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(25px);
+            border-radius: 30px;
+            padding: 40px;
+            margin-bottom: 35px;
+            box-shadow: 0 15px 45px rgba(0,0,0,0.15);
+            border: 1px solid rgba(255,255,255,0.15);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+            border-radius: 30px 30px 0 0;
+        }
+        .section:hover {
+            background: rgba(255,255,255,0.12);
+            transform: translateY(-5px);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+        
+        .section h2 {
+            font-size: 2.2rem;
+            margin-bottom: 25px;
+            color: white;
+            text-align: center;
+            font-weight: 600;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .chart-item {
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255,255,255,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        .chart-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #4ecdc4, #44a08d);
+        }
+        .chart-item:hover { 
+            transform: translateY(-8px);
+            background: rgba(255,255,255,0.12);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+        
+        .chart-item h3 {
+            color: white;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+        
+        .chart-item img {
+            max-width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .interactive-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .interactive-links a {
+            display: inline-block;
+            padding: 18px 35px;
+            background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1.05rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 25px rgba(78, 205, 196, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+        .interactive-links a::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        .interactive-links a:hover::before {
+            left: 100%;
+        }
+        .interactive-links a:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 15px 40px rgba(78, 205, 196, 0.6);
+            background: linear-gradient(135deg, #44a08d 0%, #4ecdc4 100%);
+        }
+        
+        .color-wheel-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+        }
+        .color-wheel {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, #ff0000, #ff8000, #ffff00, #80ff00, #00ff00, #00ff80, #00ffff, #0080ff, #0000ff, #8000ff, #ff00ff, #ff0080, #ff0000);
+            position: relative;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .wheel-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        .wheel-pointer {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            border: 3px solid #333;
+            transition: all 0.2s ease;
+        }
+        .lightness-slider {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        .lightness-slider input {
+            width: 150px;
+            height: 8px;
+            border-radius: 5px;
+            background: linear-gradient(to right, #000, #fff);
+            outline: none;
+            -webkit-appearance: none;
+        }
+        .lightness-slider input::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: white;
+            border: 2px solid #333;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        .lightness-slider label {
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .color-display {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+        .color-preview {
+            width: 80px;
+            height: 80px;
+            border-radius: 15px;
+            background: #4ecdc4;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            border: 3px solid white;
+        }
+        .color-info {
+            text-align: center;
+            color: white;
+        }
+        .color-info div {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            margin: 5px 0;
+            padding: 5px 10px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+        }
+        @media (max-width: 768px) {
+            .header h1 { font-size: 2rem; }
+            .container { padding: 10px; }
+            .chart-grid { grid-template-columns: 1fr; }
+            .color-wheel-container { flex-direction: column; gap: 20px; }
+            .color-wheel { width: 150px; height: 150px; }
+        }
+    </style>
+</head>
+<body class="light">
+    <button class="toggle" onclick="toggleMode()">🌙 Dark Mode</button>
+    
+    <div class="container">
+        <div class="header">
+            <h1>📈 Market Data Visualization</h1>
+            <p style="color: rgba(255,255,255,0.8); font-size: 1.1rem;">Real-time stock analysis with interactive charts</p>
+        </div>
+        
+
+        
+        <div class="section">
+            <h2>🎨 Color Wheel</h2>
+            <div class="color-wheel-container">
+                <div class="color-wheel" id="colorWheel">
+                    <div class="wheel-center" id="wheelCenter"></div>
+                    <div class="wheel-pointer" id="wheelPointer"></div>
+                </div>
+                <div class="lightness-slider">
+                    <input type="range" id="lightnessSlider" min="0" max="100" value="50">
+                    <label>Lightness</label>
+                </div>
+                <div class="color-display">
+                    <div class="color-preview" id="colorPreview"></div>
+                    <div class="color-info">
+                        <div id="colorHex">#4ECDC4</div>
+                        <div id="colorHsl">hsl(176, 61%, 60%)</div>
+                        <button id="applyBg" onclick="applyBackground()" style="margin: 10px 5px; padding: 10px 20px; background: linear-gradient(135deg, #4ecdc4, #44a08d); color: white; border: none; border-radius: 20px; cursor: pointer; font-weight: 600;">🎨 Apply</button>
+                        <button onclick="resetBackground()" style="margin: 10px 5px; padding: 10px 20px; background: linear-gradient(135deg, #ff6b6b, #ee5a24); color: white; border: none; border-radius: 20px; cursor: pointer; font-weight: 600;">🔄 Reset</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>✨ Interactive Features</h2>
+            <div class="interactive-links">
+                <a href="/dashboard" target="_blank">🎛️ Interactive Dashboard</a>
+                <a href="/backtests" target="_blank">📈 Backtest Results</a>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let currentHue = 176;
+        let currentLightness = 60;
+        
+        function toggleMode() {
+            const body = document.body;
+            const btn = document.querySelector('.toggle');
+            const savedBg = localStorage.getItem('customBg');
+            
+            if (body.classList.contains('light')) {
+                body.className = 'dark';
+                btn.textContent = '☀️ Light Mode';
+            } else {
+                body.className = 'light';
+                btn.textContent = '🌙 Dark Mode';
+            }
+            
+            // Reapply custom background if exists
+            if (savedBg) {
+                body.style.background = savedBg;
+            }
+        }
+        
+        function hslToHex(h, s, l) {
+            l /= 100;
+            const a = s * Math.min(l, 1 - l) / 100;
+            const f = n => {
+                const k = (n + h / 30) % 12;
+                const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+                return Math.round(255 * color).toString(16).padStart(2, '0');
+            };
+            return `#${f(0)}${f(8)}${f(4)}`;
+        }
+        
+        function updateColor() {
+            const hex = hslToHex(currentHue, 61, currentLightness);
+            const hsl = `hsl(${currentHue}, 61%, ${currentLightness}%)`;
+            
+            document.getElementById('colorPreview').style.background = hex;
+            document.getElementById('colorHex').textContent = hex.toUpperCase();
+            document.getElementById('colorHsl').textContent = hsl;
+        }
+        
+        function rotateWheel(angle) {
+            const pointer = document.getElementById('wheelPointer');
+            pointer.style.transform = `translateX(-50%) rotate(${angle}deg)`;
+            pointer.style.transformOrigin = '50% 90px';
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const wheel = document.getElementById('colorWheel');
+            const slider = document.getElementById('lightnessSlider');
+            
+            let isDragging = false;
+            
+            function handleColorChange(e) {
+                const rect = wheel.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+                const angle = Math.atan2(e.clientY - centerY, e.clientX - centerX);
+                const degrees = (angle * 180 / Math.PI + 90 + 360) % 360;
+                
+                currentHue = Math.round(degrees);
+                rotateWheel(degrees);
+                updateColor();
+            }
+            
+            wheel.addEventListener('mousedown', function(e) {
+                isDragging = true;
+                handleColorChange(e);
+            });
+            
+            wheel.addEventListener('mousemove', function(e) {
+                if (isDragging) {
+                    handleColorChange(e);
+                }
+            });
+            
+            document.addEventListener('mouseup', function() {
+                isDragging = false;
+            });
+            
+            slider.addEventListener('input', function(e) {
+                currentLightness = parseInt(e.target.value);
+                updateColor();
+            });
+            
+            // Load saved background
+            const savedBg = localStorage.getItem('customBg');
+            if (savedBg) {
+                document.body.style.background = savedBg;
+            }
+            
+            // Initialize
+            rotateWheel(currentHue);
+            updateColor();
+        });
+        
+        function applyBackground() {
+            const color1 = hslToHex(currentHue, 61, Math.max(currentLightness - 20, 10));
+            const color2 = hslToHex((currentHue + 30) % 360, 61, Math.min(currentLightness + 20, 90));
+            const gradient = `linear-gradient(135deg, ${color1} 0%, ${color2} 100%)`;
+            
+            document.body.style.background = gradient;
+            localStorage.setItem('customBg', gradient);
+        }
+        
+        function resetBackground() {
+            localStorage.removeItem('customBg');
+            document.body.style.background = '';
+            document.body.className = document.body.classList.contains('dark') ? 'dark' : 'light';
+        }
+    </script>
+</body>
+</html>
