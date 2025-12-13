@@ -1,0 +1,180 @@
+{
+  "fractal_refined_strategy": {
+    "total_signals": 1401,
+    "signal_distribution": {
+      "Bullish": 781,
+      "Bearish": 620
+    },
+    "top_symbols": [
+      [
+        "SOXS",
+        {
+          "total": 84,
+          "bullish": 4,
+          "bearish": 80
+        }
+      ],
+      [
+        "GOOGL",
+        {
+          "total": 78,
+          "bullish": 76,
+          "bearish": 2
+        }
+      ],
+      [
+        "SPY",
+        {
+          "total": 66,
+          "bullish": 58,
+          "bearish": 8
+        }
+      ],
+      [
+        "GOLD",
+        {
+          "total": 62,
+          "bullish": 62,
+          "bearish": 0
+        }
+      ],
+      [
+        "SOXL",
+        {
+          "total": 60,
+          "bullish": 50,
+          "bearish": 10
+        }
+      ],
+      [
+        "TZA",
+        {
+          "total": 58,
+          "bullish": 10,
+          "bearish": 48
+        }
+      ],
+      [
+        "AAPL",
+        {
+          "total": 56,
+          "bullish": 56,
+          "bearish": 0
+        }
+      ],
+      [
+        "QQQ",
+        {
+          "total": 56,
+          "bullish": 50,
+          "bearish": 6
+        }
+      ],
+      [
+        "NATURAL_GAS",
+        {
+          "total": 52,
+          "bullish": 26,
+          "bearish": 26
+        }
+      ],
+      [
+        "MSFT",
+        {
+          "total": 50,
+          "bullish": 20,
+          "bearish": 30
+        }
+      ]
+    ]
+  },
+  "fractal_ob_strategy": {
+    "total_signals": 646,
+    "signal_distribution": {
+      "Bullish": 335,
+      "Bearish": 311
+    },
+    "top_symbols": [
+      [
+        "SOXS",
+        {
+          "total": 42,
+          "bullish": 0,
+          "bearish": 42
+        }
+      ],
+      [
+        "GOOGL",
+        {
+          "total": 36,
+          "bullish": 36,
+          "bearish": 0
+        }
+      ],
+      [
+        "TSLS",
+        {
+          "total": 34,
+          "bullish": 4,
+          "bearish": 30
+        }
+      ],
+      [
+        "TSLA",
+        {
+          "total": 32,
+          "bullish": 26,
+          "bearish": 6
+        }
+      ],
+      [
+        "BTC",
+        {
+          "total": 32,
+          "bullish": 6,
+          "bearish": 26
+        }
+      ],
+      [
+        "TSLL",
+        {
+          "total": 32,
+          "bullish": 26,
+          "bearish": 6
+        }
+      ],
+      [
+        "IBIT",
+        {
+          "total": 32,
+          "bullish": 4,
+          "bearish": 28
+        }
+      ],
+      [
+        "MSFT",
+        {
+          "total": 30,
+          "bullish": 16,
+          "bearish": 14
+        }
+      ],
+      [
+        "GOLD",
+        {
+          "total": 26,
+          "bullish": 26,
+          "bearish": 0
+        }
+      ],
+      [
+        "TQQQ",
+        {
+          "total": 26,
+          "bullish": 20,
+          "bearish": 6
+        }
+      ]
+    ]
+  }
+}

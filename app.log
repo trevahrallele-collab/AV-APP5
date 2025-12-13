@@ -1,4 +1,190 @@
  * Serving Flask app 'web_app'
  * Debug mode: on
-Address already in use
-Port 8080 is in use by another program. Either identify and stop that program, or start the server with a different port.
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8080
+ * Running on http://10.0.2.0:8080
+Press CTRL+C to quit
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 103-708-618
+127.0.0.1 - - [13/Dec/2025 18:15:47] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:16:04] "GET /signals HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:16:05] "GET /api/trading-signals HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:17:06] "GET /api/trading-signals HTTP/1.1" 200 -
+ * Detected change in '/workspaces/AV-APP/src/signal_generator.py', reloading
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 103-708-618
+127.0.0.1 - - [13/Dec/2025 18:18:07] "GET /api/trading-signals HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:18:13] "GET /signals HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:18:15] "GET /api/trading-signals HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:19:16] "GET /api/trading-signals HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:20:16] "GET /api/trading-signals HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:21:17] "GET /api/trading-signals HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:23:36] "GET /api/fetch-data?type=stocks&symbol=SOXS HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:24:10] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:24:16] "GET /api/fetch-data?type=stocks&symbol=TSLL HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:24:29] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:24:38] "GET /api/fetch-data?type=stocks&symbol=TQQQ HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:25:00] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:25:08] "GET /api/fetch-data?type=stocks&symbol=SOXL HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:25:29] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:25:36] "GET /api/fetch-data?type=stocks&symbol=SPY HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:25:55] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:26:03] "GET /api/fetch-data?type=stocks&symbol=IBIT HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:26:26] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:26:32] "GET /api/fetch-data?type=stocks&symbol=QQQ HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:26:48] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:26:56] "GET /api/fetch-data?type=stocks&symbol=TZA HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:27:16] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:27:23] "GET /api/fetch-data?type=stocks&symbol=ETHA HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:27:39] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:27:41] "GET /api/trading-signals HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:27:45] "GET /api/fetch-data?type=stocks&symbol=TSLS HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:28:00] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:28:16] "GET /api/trading-signals HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:28:21] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:28:29] "GET /backtests HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:28:32] "GET /api/backtest-results HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:28:39] "GET /backtests HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:28:42] "GET /api/backtest-results HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:28:52] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:28:55] "GET /dashboard HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:28:56] "GET /api/data?type=stocks&symbol=AAPL&range=1M HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:29:10] "GET /api/data?type=commodities&symbol=GOLD&range=1M HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:29:35] "GET /api/data?type=stocks&symbol=AAPL&range=1M HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:29:44] "GET /dashboard HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:29:47] "GET /api/data?type=stocks&symbol=AAPL&range=1M HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:29:57] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:30:17] "GET /backtests HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:30:21] "GET /api/backtest-results HTTP/1.1" 200 -
+ * Detected change in '/workspaces/AV-APP/src/av_data_fetcher.py', reloading
+Data saved to database ../database/stock_data.db
+Data saved to database ../database/stock_data.db
+Data saved to database ../database/stock_data.db
+Data saved to database ../database/stock_data.db
+Data saved to database ../database/stock_data.db
+Data saved to database ../database/stock_data.db
+Data saved to database ../database/stock_data.db
+Data saved to database ../database/stock_data.db
+Data saved to database ../database/stock_data.db
+Data saved to database ../database/stock_data.db
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 103-708-618
+ * Detected change in '/workspaces/AV-APP/src/web_app.py', reloading
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 103-708-618
+ * Detected change in '/workspaces/AV-APP/src/web_app.py', reloading
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 103-708-618
+127.0.0.1 - - [13/Dec/2025 18:31:34] "GET /api/fetch-data?type=etfs&symbol=SOXS HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:31:42] "GET /api/fetch-data?type=etfs&symbol=TSLL HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:31:48] "GET /api/fetch-data?type=etfs&symbol=TQQQ HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:31:55] "GET /api/fetch-data?type=etfs&symbol=SOXL HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:32:08] "GET /api/fetch-data?type=etfs&symbol=SPY HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:32:17] "GET /api/fetch-data?type=etfs&symbol=IBIT HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:32:24] "GET /api/fetch-data?type=etfs&symbol=QQQ HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:32:31] "GET /api/fetch-data?type=etfs&symbol=TZA HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:32:43] "GET /api/fetch-data?type=etfs&symbol=ETHA HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:32:52] "GET /api/fetch-data?type=etfs&symbol=TSLS HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:33:11] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:33:17] "GET /api/data?type=etfs&symbol=SPY&range=1M HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:34:03] "GET /backtests HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:34:07] "GET /api/backtest-results HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:34:30] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:34:38] "GET /dashboard HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:34:46] "GET /api/data?type=stocks&symbol=AAPL&range=1M HTTP/1.1" 200 -
+ * Detected change in '/workspaces/AV-APP/src/web_app.py', reloading
+Data saved to database ../database/etf_data.db
+Data saved to database ../database/etf_data.db
+Data saved to database ../database/etf_data.db
+Data saved to database ../database/etf_data.db
+Data saved to database ../database/etf_data.db
+Data saved to database ../database/etf_data.db
+Data saved to database ../database/etf_data.db
+Data saved to database ../database/etf_data.db
+Data saved to database ../database/etf_data.db
+Data saved to database ../database/etf_data.db
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 103-708-618
+127.0.0.1 - - [13/Dec/2025 18:35:53] "GET /api/data?type=etfs&symbol=SPY&range=1M HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:36:09] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:36:20] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:36:32] "GET /dashboard HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:36:38] "GET /api/data?type=etfs&symbol=TQQQ&range=1M HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:36:44] "GET /api/data?type=etfs&symbol=SOXL&range=1M HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:36:57] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:37:16] "GET /dashboard HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:37:19] "GET /api/data?type=stocks&symbol=AAPL&range=1M HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:37:21] "GET /api/data?type=etfs&symbol=SPY&range=1M HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:37:41] "GET /api/data?type=etfs&symbol=QQQ&range=1M HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:37:50] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:38:01] "GET /backtests HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:38:04] "GET /api/backtest-results HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:38:24] "GET /backtests HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:38:27] "GET /api/backtest-results HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:39:53] "GET /api/backtest-results HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:40:45] "GET /api/backtest-results HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:41:54] "GET /backtests HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:41:56] "GET /api/backtest-results HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:44:25] "GET /backtests HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:44:38] "GET /api/backtest-results HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:44:50] "GET /api/strategy-results/fractal_refined_strategy HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:44:55] "GET /api/strategy-results/fractal_ob_strategy HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:45:02] "GET /api/backtest-results HTTP/1.1" 200 -
+ * Detected change in '/workspaces/AV-APP/src/web_app.py', reloading
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 103-708-618
+127.0.0.1 - - [13/Dec/2025 18:49:52] "GET /backtests HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:50:11] "GET /api/backtest-results HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:50:27] "GET /api/strategy-results/fractal_refined_strategy HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:50:31] "GET /api/strategy-results/fractal_ob_strategy HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:50:43] "GET /api/backtest-results HTTP/1.1" 200 -
+ * Detected change in '/workspaces/AV-APP/src/web_app.py', reloading
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 103-708-618
+127.0.0.1 - - [13/Dec/2025 18:51:53] "GET /backtests HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:51:56] "GET /api/backtest-results HTTP/1.1" 200 -
+ * Detected change in '/workspaces/AV-APP/src/web_app.py', reloading
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 103-708-618
+127.0.0.1 - - [13/Dec/2025 18:53:53] "GET /backtests HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:53:56] "GET /api/backtest-results HTTP/1.1" 200 -
+ * Detected change in '/workspaces/AV-APP/src/web_app.py', reloading
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 103-708-618
+127.0.0.1 - - [13/Dec/2025 18:55:38] "GET /backtests HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:56:07] "GET /api/backtest-results HTTP/1.1" 200 -
+ * Detected change in '/workspaces/AV-APP/src/web_app.py', reloading
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 103-708-618
+127.0.0.1 - - [13/Dec/2025 18:57:47] "GET /backtests HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:58:07] "GET /api/backtest-results HTTP/1.1" 200 -
+ * Detected change in '/workspaces/AV-APP/src/web_app.py', reloading
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 103-708-618
+127.0.0.1 - - [13/Dec/2025 18:59:22] "GET /backtests HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 18:59:26] "GET /api/backtest-results HTTP/1.1" 200 -
+ * Detected change in '/workspaces/AV-APP/src/web_app.py', reloading
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 103-708-618
+127.0.0.1 - - [13/Dec/2025 19:00:57] "GET /backtests HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 19:01:31] "GET /api/backtest-results HTTP/1.1" 200 -
+ * Detected change in '/workspaces/AV-APP/src/web_app.py', reloading
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 103-708-618
+127.0.0.1 - - [13/Dec/2025 19:03:11] "GET /backtests HTTP/1.1" 200 -
+127.0.0.1 - - [13/Dec/2025 19:03:24] "GET /api/backtest-results HTTP/1.1" 200 -

@@ -23,6 +23,38 @@ def backtests():
 def trading_signals():
     return render_template('trading_signals.html')
 
+@app.route('/etha')
+def etha_backtest():
+    return render_template('backtest_detail.html', data_type='etfs', symbol='ETHA')
+
+@app.route('/ibit')
+def ibit_backtest():
+    return render_template('backtest_detail.html', data_type='etfs', symbol='IBIT')
+
+@app.route('/qqq')
+def qqq_backtest():
+    return render_template('backtest_detail.html', data_type='etfs', symbol='QQQ')
+
+@app.route('/soxl')
+def soxl_backtest():
+    return render_template('backtest_detail.html', data_type='etfs', symbol='SOXL')
+
+@app.route('/soxs')
+def soxs_backtest():
+    return render_template('backtest_detail.html', data_type='etfs', symbol='SOXS')
+
+@app.route('/spy')
+def spy_backtest():
+    return render_template('backtest_detail.html', data_type='etfs', symbol='SPY')
+
+@app.route('/tqqq')
+def tqqq_backtest():
+    return render_template('backtest_detail.html', data_type='etfs', symbol='TQQQ')
+
+@app.route('/tsll')
+def tsll_backtest():
+    return render_template('backtest_detail.html', data_type='etfs', symbol='TSLL')
+
 @app.route('/backtest/<data_type>/<symbol>')
 def backtest_detail(data_type, symbol):
     return render_template('backtest_detail.html', data_type=data_type, symbol=symbol)
@@ -134,6 +166,49 @@ def api_strategy_results(strategy_name):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/install-strategy', methods=['POST'])
+def api_install_strategy():
+    try:
+        data = request.get_json()
+        strategy_name = data.get('strategy')
+        
+        if not strategy_name:
+            return jsonify({'error': 'Strategy name required'}), 400
+        
+        # Import and run installation
+        import sys
+        import os
+        sys.path.append('..')
+        
+        from install_strategies import install_strategy
+        success = install_strategy(strategy_name)
+        
+        if success:
+            return jsonify({'success': True, 'message': f'{strategy_name} installed successfully'})
+        else:
+            return jsonify({'success': False, 'error': 'Installation failed'})
+            
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/trading-signals')
+def api_trading_signals():
+    """Generate real trading signals from strategy results"""
+    try:
+        from signal_generator import generate_real_signals
+        from datetime import datetime
+        
+        signals = generate_real_signals()
+        
+        return jsonify({
+            'signals': signals,
+            'total_count': len(signals),
+            'generated_at': datetime.now().isoformat()
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/api/fetch-data')
 def fetch_data():
     data_type = request.args.get('type', 'stocks')
@@ -151,6 +226,8 @@ def fetch_data():
             db_path = "../database/forex_data.db"
         elif data_type == 'crypto':
             db_path = "../database/stock_data.db"  # Crypto stored in stock db for now
+        elif data_type == 'etfs':
+            db_path = "../database/etf_data.db"
         else:  # commodities
             db_path = "../database/commodity_data.db"
         
@@ -164,6 +241,8 @@ def fetch_data():
             df = fetcher.fetch_forex_data(from_symbol, to_symbol)
         elif data_type == 'crypto':
             df = fetcher.fetch_daily_data(symbol)  # Crypto uses same API as stocks
+        elif data_type == 'etfs':
+            df = fetcher.fetch_etf_data(symbol)
         else:  # commodities
             df = fetcher.fetch_commodity_data(symbol)
         

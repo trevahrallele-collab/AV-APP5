@@ -12,7 +12,8 @@ def export_databases_to_json():
     databases = [
         ("database/stock_data.db", "stocks"),
         ("database/forex_data.db", "forex"),
-        ("database/commodity_data.db", "commodities")
+        ("database/commodity_data.db", "commodities"),
+        ("database/etf_data.db", "etfs")
     ]
     
     all_data = {}

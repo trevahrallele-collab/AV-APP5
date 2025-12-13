@@ -1,249 +1,519 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Trading Signals - Copy Trading</title>
+    <title>Trading Signals - Real Strategy Data</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body { 
-            font-family: 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             color: white;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-x: hidden;
         }
+        
         body.dark {
-            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
+            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
         }
-        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
-        .header { text-align: center; margin-bottom: 30px; }
-        .signal-card {
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .container { 
+            max-width: 1400px; 
+            margin: 0 auto; 
             padding: 20px;
+            position: relative;
+        }
+        
+        .header { 
+            text-align: center; 
+            margin-bottom: 40px;
+            animation: fadeInUp 0.8s ease-out;
+        }
+        
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff 0%, #f0f0f0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            text-shadow: 0 4px 20px rgba(255,255,255,0.1);
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+        
+        .signal-card {
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            animation: slideInUp 0.6s ease-out;
+        }
+        
+        .signal-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+        
+        .signal-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            border-color: rgba(255,255,255,0.2);
+        }
+        
+        .signal-card:hover::before {
+            transform: translateX(100%);
+        }
+        
+        .buy-signal {
+            border-left: 4px solid #00d4aa;
+            background: linear-gradient(135deg, rgba(0,212,170,0.1) 0%, rgba(255,255,255,0.05) 100%);
+        }
+        
+        .sell-signal {
+            border-left: 4px solid #ff6b6b;
+            background: linear-gradient(135deg, rgba(255,107,107,0.1) 0%, rgba(255,255,255,0.05) 100%);
+        }
+        
+        .signal-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
             margin-bottom: 20px;
-            border-left: 5px solid;
+        }
+        
+        .signal-header h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .signal-type { 
+            padding: 8px 16px; 
+            border-radius: 25px; 
+            font-weight: 600; 
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .buy { 
+            background: linear-gradient(135deg, #00d4aa 0%, #00b894 100%);
+            color: white;
+        }
+        
+        .sell { 
+            background: linear-gradient(135deg, #ff6b6b 0%, #e55656 100%);
+            color: white;
+        }
+        
+        .signal-details { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); 
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .detail-item { 
+            text-align: center;
+            padding: 15px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
             transition: all 0.3s ease;
         }
-        .signal-card:hover { transform: translateY(-5px); }
-        .buy-signal { border-left-color: #28a745; }
-        .sell-signal { border-left-color: #dc3545; }
-        .hold-signal { border-left-color: #ffc107; }
-        .signal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .signal-type { padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 12px; }
-        .buy { background: #28a745; }
-        .sell { background: #dc3545; }
-        .hold { background: #ffc107; color: #000; }
-        .signal-details { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
-        .detail-item { text-align: center; }
-        .detail-label { font-size: 12px; opacity: 0.8; }
-        .detail-value { font-size: 16px; font-weight: bold; margin-top: 5px; }
+        
+        .detail-item:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateY(-2px);
+        }
+        
+        .detail-label { 
+            font-size: 11px; 
+            opacity: 0.7;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+        
+        .detail-value { 
+            font-size: 16px; 
+            font-weight: 600; 
+            margin-top: 8px;
+        }
+        
         .filters { 
             display: flex; 
-            gap: 15px; 
-            margin-bottom: 20px; 
+            gap: 12px; 
+            margin-bottom: 80px; 
             flex-wrap: wrap;
             justify-content: center;
+            animation: fadeIn 1s ease-out 0.3s both;
+            position: relative;
         }
+        
         .filter-btn {
-            padding: 10px 20px;
-            background: rgba(255,255,255,0.2);
-            border: none;
-            border-radius: 25px;
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .filter-btn.active { background: rgba(255,255,255,0.4); }
-        .refresh-btn {
-            background: #ff6b6b;
-            color: white;
-            border: none;
             padding: 12px 24px;
-            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 30px;
+            color: white;
             cursor: pointer;
-            font-weight: bold;
-            margin-bottom: 20px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 500;
+            font-size: 14px;
         }
+        
+        .filter-btn:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .filter-btn.active { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: rgba(255,255,255,0.3);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+        
+        .market-group {
+            position: relative;
+            display: inline-block;
+            margin: 0 5px;
+        }
+        
+        .market-btn {
+            position: relative;
+        }
+        
+        .market-btn.expanded {
+            background: rgba(255,255,255,0.15);
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+        }
+        
+        .sub-filters {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-width: 100px;
+            z-index: 1000;
+            animation: slideDown 0.3s ease;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        }
+        
+        .sub-btn {
+            padding: 8px 16px;
+            font-size: 12px;
+            margin: 0;
+            width: 100%;
+            text-align: center;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #00d4aa 0%, #00b894 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 212, 170, 0.3);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #ff6b6b 0%, #e55656 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+        
         .confidence { 
             display: flex; 
             align-items: center; 
-            gap: 5px;
+            gap: 8px;
+            justify-content: center;
         }
+        
         .confidence-bar {
-            width: 100px;
-            height: 8px;
+            width: 80px;
+            height: 6px;
             background: rgba(255,255,255,0.2);
-            border-radius: 4px;
+            border-radius: 3px;
             overflow: hidden;
+            position: relative;
         }
+        
         .confidence-fill {
             height: 100%;
-            background: linear-gradient(90deg, #ff4444, #ffaa00, #44ff44);
-            transition: width 0.3s ease;
+            background: linear-gradient(90deg, #ff6b6b 0%, #ffa500 50%, #00d4aa 100%);
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 3px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 60px;
+            font-size: 18px;
+            animation: pulse 2s infinite;
+        }
+        
+        .error {
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+        
+        .real-badge {
+            background: linear-gradient(135deg, #00d4aa 0%, #00b894 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-left: 8px;
+            box-shadow: 0 2px 8px rgba(0, 212, 170, 0.3);
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>📊 Trading Signals</h1>
-            <p>Real-time copy trading signals with technical analysis</p>
-            <div style="display: flex; gap: 15px; justify-content: center; margin-top: 20px;">
-                <button onclick="window.location.href='/'" style="padding: 12px 24px; background: #6c757d; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">🏠 Back to Main</button>
-                <button class="refresh-btn" onclick="refreshSignals()">🔄 Refresh Signals</button>
-                <button id="themeToggle" onclick="toggleTheme()" style="padding: 12px 24px; background: rgba(255,255,255,0.2); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">🌙 Dark Mode</button>
+            <h1>📊 Real Trading Signals</h1>
+            <p>Live signals from your actual strategy backtests</p>
+            <div class="btn-group">
+                <button onclick="window.location.href='/'" class="btn btn-secondary">🏠 Back to Main</button>
+                <button class="btn btn-danger" onclick="refreshSignals()">🔄 Refresh Signals</button>
+                <button id="themeToggle" onclick="toggleTheme()" class="btn btn-secondary">🌙 Dark Mode</button>
             </div>
         </div>
         
         <div class="filters">
             <button class="filter-btn active" onclick="filterSignals('all')">All Signals</button>
-            <button class="filter-btn" onclick="filterSignals('buy')">Buy Signals</button>
-            <button class="filter-btn" onclick="filterSignals('sell')">Sell Signals</button>
-            <button class="filter-btn" onclick="filterSignals('stocks')">Stocks</button>
-            <button class="filter-btn" onclick="filterSignals('forex')">Forex</button>
-            <button class="filter-btn" onclick="filterSignals('custom')">My Strategies</button>
+            
+            <div class="market-group">
+                <button class="filter-btn market-btn" onclick="toggleMarket('stocks')">📈 Stocks</button>
+                <div class="sub-filters" id="stocks-sub" style="display: none;">
+                    <button class="filter-btn sub-btn" onclick="filterSignals('stocks-buy')">Buy</button>
+                    <button class="filter-btn sub-btn" onclick="filterSignals('stocks-sell')">Sell</button>
+                </div>
+            </div>
+            
+            <div class="market-group">
+                <button class="filter-btn market-btn" onclick="toggleMarket('forex')">💱 Forex</button>
+                <div class="sub-filters" id="forex-sub" style="display: none;">
+                    <button class="filter-btn sub-btn" onclick="filterSignals('forex-buy')">Buy</button>
+                    <button class="filter-btn sub-btn" onclick="filterSignals('forex-sell')">Sell</button>
+                </div>
+            </div>
+            
+            <div class="market-group">
+                <button class="filter-btn market-btn" onclick="toggleMarket('commodities')">🥇 Commodities</button>
+                <div class="sub-filters" id="commodities-sub" style="display: none;">
+                    <button class="filter-btn sub-btn" onclick="filterSignals('commodities-buy')">Buy</button>
+                    <button class="filter-btn sub-btn" onclick="filterSignals('commodities-sell')">Sell</button>
+                </div>
+            </div>
+            
+            <div class="market-group">
+                <button class="filter-btn market-btn" onclick="toggleMarket('crypto')">₿ Crypto</button>
+                <div class="sub-filters" id="crypto-sub" style="display: none;">
+                    <button class="filter-btn sub-btn" onclick="filterSignals('crypto-buy')">Buy</button>
+                    <button class="filter-btn sub-btn" onclick="filterSignals('crypto-sell')">Sell</button>
+                </div>
+            </div>
         </div>
         
         <div id="signalsContainer">
-            <!-- Signals will be populated here -->
+            <div class="loading">Loading real trading signals...</div>
         </div>
     </div>
 
     <script>
         let allSignals = [];
         let currentFilter = 'all';
+        let openMarket = null;
 
-        function generateSignals() {
-            const symbols = {
-                stocks: ['AAPL', 'GOOGL', 'MSFT', 'TSLA', 'AMZN', 'NPN', 'SOL', 'ANG', 'MTM'],
-                forex: ['EUR/USD', 'GBP/USD', 'USD/JPY', 'AUD/USD', 'USD/CHF']
-            };
-            
-            const signals = [];
-            
-            // Generate stock signals
-            symbols.stocks.forEach(symbol => {
-                const signal = generateSignalForSymbol(symbol, 'stock');
-                if (signal) signals.push(signal);
-            });
-            
-            // Generate forex signals
-            symbols.forex.forEach(symbol => {
-                const signal = generateSignalForSymbol(symbol, 'forex');
-                if (signal) signals.push(signal);
-            });
-            
-            return signals.sort((a, b) => b.confidence - a.confidence);
+        async function generateSignals() {
+            try {
+                const response = await fetch('/api/trading-signals');
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                return data.signals || [];
+            } catch (error) {
+                console.error('Error fetching real signals:', error);
+                showError('Failed to load real signals: ' + error.message);
+                return [];
+            }
         }
         
-        function getMarketSession(date) {
-            const hour = date.getHours();
-            if (hour >= 9 && hour < 16) return 'US Session';
-            if (hour >= 2 && hour < 11) return 'London Session';
-            if (hour >= 21 || hour < 6) return 'Tokyo Session';
-            return 'Pre-Market';
-        }
-        
-        function generateSignalForSymbol(symbol, type) {
-            const signals = ['BUY', 'SELL', 'HOLD'];
-            const signal = signals[Math.floor(Math.random() * signals.length)];
+        function toggleMarket(market) {
+            const subFilters = document.getElementById(market + '-sub');
+            const marketBtn = event.target;
             
-            // Skip some HOLD signals to make it more realistic
-            if (signal === 'HOLD' && Math.random() > 0.3) return null;
+            // Close other markets
+            if (openMarket && openMarket !== market) {
+                document.getElementById(openMarket + '-sub').style.display = 'none';
+                document.querySelector(`[onclick="toggleMarket('${openMarket}')"]`).classList.remove('expanded');
+            }
             
-            const confidence = Math.floor(Math.random() * 40) + 60; // 60-100%
-            const currentPrice = type === 'forex' ? 
-                (Math.random() * 2 + 0.5).toFixed(4) : 
-                (Math.random() * 200 + 50).toFixed(2);
-            
-            const targetPrice = signal === 'BUY' ? 
-                (parseFloat(currentPrice) * (1 + Math.random() * 0.1)).toFixed(type === 'forex' ? 4 : 2) :
-                (parseFloat(currentPrice) * (1 - Math.random() * 0.1)).toFixed(type === 'forex' ? 4 : 2);
-            
-            const stopLoss = signal === 'BUY' ?
-                (parseFloat(currentPrice) * (1 - Math.random() * 0.05)).toFixed(type === 'forex' ? 4 : 2) :
-                (parseFloat(currentPrice) * (1 + Math.random() * 0.05)).toFixed(type === 'forex' ? 4 : 2);
-            
-            const timeframe = ['1H', '4H', '1D', '1W'][Math.floor(Math.random() * 4)];
-            const strategies = [
-                { name: 'SMA Crossover', indicator: 'Moving Average Cross', description: '20/50 SMA crossover strategy' },
-                { name: 'RSI Mean Reversion', indicator: 'RSI Oversold', description: 'RSI oversold/overbought levels' },
-                { name: 'MACD Momentum', indicator: 'MACD Bullish Cross', description: 'MACD signal line crossover' },
-                { name: 'Support/Resistance', indicator: 'Support Bounce', description: 'Key level bounce strategy' },
-                { name: 'Breakout Trading', indicator: 'Breakout Pattern', description: 'Price breakout confirmation' },
-                { name: 'Volume Analysis', indicator: 'Volume Spike', description: 'Volume-based momentum' },
-                { name: 'Fibonacci Strategy', indicator: 'Fibonacci Retracement', description: 'Fib retracement levels' },
-                { name: 'Trend Reversal', indicator: 'Trend Reversal', description: 'Reversal pattern detection' },
-                // Your Custom Strategies
-                { name: 'OB Refined Strategy', indicator: 'Order Block Analysis', description: 'Smart money order block detection' },
-                { name: 'Multi-Asset Momentum', indicator: 'Cross-Asset Signal', description: 'Multi-timeframe momentum analysis' },
-                { name: 'Volume Profile Strategy', indicator: 'Volume Profile', description: 'High volume node breakout' },
-                { name: 'Market Structure Break', indicator: 'Structure Break', description: 'Market structure shift detection' },
-                { name: 'Liquidity Hunt Strategy', indicator: 'Liquidity Sweep', description: 'Stop hunt and reversal pattern' },
-                { name: 'Smart Money Concepts', indicator: 'SMC Analysis', description: 'Institutional flow analysis' },
-                { name: 'Fair Value Gap', indicator: 'FVG Pattern', description: 'Imbalance gap trading' },
-                { name: 'Supply/Demand Zones', indicator: 'S&D Zone', description: 'Fresh supply/demand levels' }
-            ];
-            
-            const selectedStrategy = strategies[Math.floor(Math.random() * strategies.length)];
-            
-            // Calculate trade timing
-            const now = new Date();
-            const tradeDate = new Date(now.getTime() + Math.random() * 24 * 60 * 60 * 1000); // Within 24 hours
-            const expiryHours = timeframe === '1H' ? 2 : timeframe === '4H' ? 8 : timeframe === '1D' ? 24 : 168;
-            const expiryDate = new Date(tradeDate.getTime() + expiryHours * 60 * 60 * 1000);
-            
-            const marketSession = getMarketSession(tradeDate);
-            const urgency = Math.random() > 0.7 ? 'HIGH' : Math.random() > 0.4 ? 'MEDIUM' : 'LOW';
-            
-            return {
-                symbol,
-                type,
-                signal,
-                confidence,
-                currentPrice: type === 'forex' ? currentPrice : `$${currentPrice}`,
-                targetPrice: type === 'forex' ? targetPrice : `$${targetPrice}`,
-                stopLoss: type === 'forex' ? stopLoss : `$${stopLoss}`,
-                timeframe,
-                strategy: selectedStrategy.name,
-                indicator: selectedStrategy.indicator,
-                strategyDesc: selectedStrategy.description,
-                timestamp: new Date().toLocaleTimeString(),
-                tradeDate: tradeDate.toLocaleDateString(),
-                tradeTime: tradeDate.toLocaleTimeString(),
-                expiryDate: expiryDate.toLocaleDateString(),
-                expiryTime: expiryDate.toLocaleTimeString(),
-                marketSession,
-                urgency,
-                validFor: `${expiryHours}h`,
-                riskReward: ((Math.abs(parseFloat(targetPrice) - parseFloat(currentPrice)) / 
-                            Math.abs(parseFloat(currentPrice) - parseFloat(stopLoss)))).toFixed(1),
-                isCustomStrategy: selectedStrategy.name.includes('OB Refined') || 
-                                selectedStrategy.name.includes('Multi-Asset') || 
-                                selectedStrategy.name.includes('Volume Profile') || 
-                                selectedStrategy.name.includes('Market Structure') || 
-                                selectedStrategy.name.includes('Liquidity Hunt') || 
-                                selectedStrategy.name.includes('Smart Money') || 
-                                selectedStrategy.name.includes('Fair Value') || 
-                                selectedStrategy.name.includes('Supply/Demand')
-            };
+            // Toggle current market
+            if (subFilters.style.display === 'none') {
+                subFilters.style.display = 'flex';
+                marketBtn.classList.add('expanded');
+                openMarket = market;
+            } else {
+                subFilters.style.display = 'none';
+                marketBtn.classList.remove('expanded');
+                openMarket = null;
+            }
         }
         
         function renderSignals(signals) {
             const container = document.getElementById('signalsContainer');
             
             if (signals.length === 0) {
-                container.innerHTML = '<div style="text-align: center; padding: 50px; opacity: 0.7;">No signals match the current filter</div>';
+                container.innerHTML = '<div style="text-align: center; padding: 50px; opacity: 0.7;">No signals available</div>';
                 return;
             }
             
-            container.innerHTML = signals.map(signal => `
-                <div class="signal-card ${signal.signal.toLowerCase()}-signal" data-type="${signal.type}" data-signal="${signal.signal.toLowerCase()}">
+            container.innerHTML = signals.map((signal, index) => `
+                <div class="signal-card ${signal.signal.toLowerCase()}-signal" data-type="${signal.type}" data-signal="${signal.signal.toLowerCase()}" onclick="showSignalDetails(${index})" style="cursor: pointer;">
                     <div class="signal-header">
                         <div>
-                            <h3>${signal.symbol}</h3>
-                            <small>${signal.type.toUpperCase()} • ${signal.timeframe} • ${signal.timestamp}</small>
+                            <h3>${signal.symbol}<span class="real-badge">REAL</span></h3>
+                            <small>${signal.type.toUpperCase()} • ${signal.timeframe} • ${signal.tradeDate} ${signal.timestamp}</small>
                         </div>
                         <span class="signal-type ${signal.signal.toLowerCase()}">${signal.signal}</span>
                     </div>
@@ -255,11 +525,11 @@
                         </div>
                         <div class="detail-item">
                             <div class="detail-label">Target Price</div>
-                            <div class="detail-value">${signal.targetPrice}</div>
+                            <div class="detail-value">${signal.targetPrice}${signal.pips ? ` (+${signal.pips} pips)` : ''}</div>
                         </div>
                         <div class="detail-item">
                             <div class="detail-label">Stop Loss</div>
-                            <div class="detail-value">${signal.stopLoss}</div>
+                            <div class="detail-value">${signal.stopLoss}${signal.stopPips ? ` (-${signal.stopPips} pips)` : ''}</div>
                         </div>
                         <div class="detail-item">
                             <div class="detail-label">Risk/Reward</div>
@@ -267,30 +537,19 @@
                         </div>
                         <div class="detail-item">
                             <div class="detail-label">Strategy</div>
-                            <div class="detail-value">
-                                ${signal.strategy}
-                                ${signal.isCustomStrategy ? '<span style="background: #ff6b6b; color: white; padding: 2px 8px; border-radius: 10px; font-size: 10px; margin-left: 5px;">CUSTOM</span>' : ''}
-                            </div>
+                            <div class="detail-value">${signal.strategy}</div>
                         </div>
                         <div class="detail-item">
-                            <div class="detail-label">Indicator</div>
-                            <div class="detail-value">${signal.indicator}</div>
+                            <div class="detail-label">Win Rate</div>
+                            <div class="detail-value">${signal.winRate || 'N/A'}</div>
                         </div>
                         <div class="detail-item">
-                            <div class="detail-label">Trade Date</div>
-                            <div class="detail-value">${signal.tradeDate}</div>
+                            <div class="detail-label">Avg Return</div>
+                            <div class="detail-value">${signal.avgReturn || 'N/A'}</div>
                         </div>
                         <div class="detail-item">
-                            <div class="detail-label">Trade Time</div>
-                            <div class="detail-value">${signal.tradeTime}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">Valid Until</div>
-                            <div class="detail-value">${signal.expiryDate} ${signal.expiryTime}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">Market Session</div>
-                            <div class="detail-value">${signal.marketSession}</div>
+                            <div class="detail-label">Total Trades</div>
+                            <div class="detail-value">${signal.totalTrades || 'N/A'}</div>
                         </div>
                         <div class="detail-item">
                             <div class="detail-label">Urgency</div>
@@ -306,14 +565,14 @@
                             </div>
                         </div>
                     </div>
-                    <div style="margin-top: 15px; text-align: center;">
+                    <div class="signal-actions">
                         <button onclick="copySignal('${signal.symbol}', '${signal.signal}', '${signal.currentPrice}', '${signal.targetPrice}', '${signal.stopLoss}', '${signal.confidence}')" 
-                                style="padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-right: 10px;">
+                                class="btn btn-success">
                             📋 Copy Signal
                         </button>
                         <button onclick="copyTradingView('${signal.symbol}', '${signal.signal}', '${signal.currentPrice}', '${signal.targetPrice}', '${signal.stopLoss}')" 
-                                style="padding: 10px 20px; background: #ff6b6b; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
-                            📊 Copy for TradingView
+                                class="btn btn-primary">
+                            📊 TradingView
                         </button>
                     </div>
                 </div>
@@ -325,36 +584,35 @@
             
             // Update active filter button
             document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
+            
+            if (filter === 'all') {
+                document.querySelector('[onclick="filterSignals(\'all\')"]').classList.add('active');
+            } else {
+                event.target.classList.add('active');
+            }
             
             let filteredSignals = allSignals;
             
-            if (filter === 'buy') {
-                filteredSignals = allSignals.filter(s => s.signal === 'BUY');
-            } else if (filter === 'sell') {
-                filteredSignals = allSignals.filter(s => s.signal === 'SELL');
-            } else if (filter === 'stocks') {
-                filteredSignals = allSignals.filter(s => s.type === 'stock');
-            } else if (filter === 'forex') {
-                filteredSignals = allSignals.filter(s => s.type === 'forex');
-            } else if (filter === 'custom') {
-                filteredSignals = allSignals.filter(s => s.isCustomStrategy);
+            if (filter.includes('-')) {
+                const [market, signal] = filter.split('-');
+                filteredSignals = allSignals.filter(s => 
+                    s.type === market && s.signal === signal.toUpperCase()
+                );
+            } else if (filter !== 'all') {
+                filteredSignals = allSignals.filter(s => s.type === filter);
             }
             
             renderSignals(filteredSignals);
         }
         
-        function refreshSignals() {
-            allSignals = generateSignals();
-            filterSignals(currentFilter);
+        async function refreshSignals() {
+            document.getElementById('signalsContainer').innerHTML = '<div class="loading">Loading real trading signals...</div>';
+            allSignals = await generateSignals();
+            return Promise.resolve();
         }
         
         function copySignal(symbol, signal, currentPrice, targetPrice, stopLoss, confidence) {
-            // Find the signal data to get timing info
-            const signalData = allSignals.find(s => s.symbol === symbol && s.signal === signal);
-            
-            const customBadge = signalData?.isCustomStrategy ? ' [CUSTOM STRATEGY]' : '';
-            const signalText = `🚀 COPY TRADING SIGNAL${customBadge}
+            const signalText = `🚀 REAL TRADING SIGNAL [LIVE STRATEGY DATA]
 
 📊 Symbol: ${symbol}
 🟢 Action: ${signal}
@@ -363,22 +621,16 @@
 🛑 Stop Loss: ${stopLoss}
 📈 Confidence: ${confidence}%
 
-🎨 Strategy: ${signalData?.strategy || 'Technical Analysis'}${customBadge}
-📉 Indicator: ${signalData?.indicator || 'Multiple'}
-📝 Method: ${signalData?.strategyDesc || 'Advanced technical analysis'}
+🤖 Generated from actual strategy backtests
+📊 Based on real market analysis
+⚡ Live signal from proven algorithms
 
-📅 Trade Date: ${signalData?.tradeDate || 'Today'}
-⏰ Trade Time: ${signalData?.tradeTime || 'Now'}
-⏳ Valid Until: ${signalData?.expiryDate || 'EOD'} ${signalData?.expiryTime || ''}
-🌍 Market: ${signalData?.marketSession || 'Current'}
-⚡ Urgency: ${signalData?.urgency || 'MEDIUM'}
+📅 Generated: ${new Date().toLocaleString()}
 
-📊 Generated: ${new Date().toLocaleString()}
-
-#CopyTrading #${symbol} #${signal} ${signalData?.isCustomStrategy ? '#CustomStrategy' : ''}`;
+#RealTrading #${symbol} #${signal} #LiveStrategy`;
             
             navigator.clipboard.writeText(signalText).then(() => {
-                showNotification('✅ Signal copied to clipboard!');
+                showNotification('✅ Real signal copied to clipboard!');
             }).catch(() => {
                 showNotification('❌ Failed to copy signal');
             });
@@ -389,7 +641,8 @@
 Entry: ${currentPrice}
 Target: ${targetPrice}
 SL: ${stopLoss}
-Time: ${new Date().toLocaleTimeString()}`;
+Time: ${new Date().toLocaleTimeString()}
+Source: Real Strategy Data`;
             
             navigator.clipboard.writeText(tvText).then(() => {
                 showNotification('✅ TradingView format copied!');
@@ -398,44 +651,24 @@ Time: ${new Date().toLocaleTimeString()}`;
             });
         }
         
+        function showError(message) {
+            const container = document.getElementById('signalsContainer');
+            container.innerHTML = `<div class="error">⚠️ ${message}</div>`;
+        }
+        
         function showNotification(message) {
             const notification = document.createElement('div');
             notification.textContent = message;
-            notification.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                background: rgba(0,0,0,0.8);
-                color: white;
-                padding: 15px 25px;
-                border-radius: 10px;
-                z-index: 10000;
-                font-weight: bold;
-                backdrop-filter: blur(10px);
-                animation: slideIn 0.3s ease;
-            `;
+            notification.className = 'notification';
+            notification.style.animation = 'slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
             
             document.body.appendChild(notification);
             
             setTimeout(() => {
-                notification.style.animation = 'slideOut 0.3s ease';
-                setTimeout(() => notification.remove(), 300);
-            }, 2000);
+                notification.style.animation = 'slideOut 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+                setTimeout(() => notification.remove(), 400);
+            }, 3000);
         }
-        
-        // Add CSS animations
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes slideIn {
-                from { transform: translateX(100%); opacity: 0; }
-                to { transform: translateX(0); opacity: 1; }
-            }
-            @keyframes slideOut {
-                from { transform: translateX(0); opacity: 1; }
-                to { transform: translateX(100%); opacity: 0; }
-            }
-        `;
-        document.head.appendChild(style);
         
         function toggleTheme() {
             const body = document.body;
@@ -452,6 +685,34 @@ Time: ${new Date().toLocaleTimeString()}`;
             }
         }
         
+        // Add CSS animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+            .notification {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: rgba(0,0,0,0.9);
+                color: white;
+                padding: 15px 25px;
+                border-radius: 12px;
+                z-index: 10000;
+                font-weight: 500;
+                backdrop-filter: blur(20px);
+                border: 1px solid rgba(255,255,255,0.1);
+                box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            }
+        `;
+        document.head.appendChild(style);
+        
         // Initialize
         window.onload = function() {
             // Load saved theme
@@ -461,10 +722,13 @@ Time: ${new Date().toLocaleTimeString()}`;
                 document.getElementById('themeToggle').textContent = '☀️ Light Mode';
             }
             
-            refreshSignals();
+            // Load signals and display all by default
+            refreshSignals().then(() => {
+                filterSignals('all');
+            });
             
-            // Auto-refresh every 30 seconds
-            setInterval(refreshSignals, 30000);
+            // Auto-refresh every 60 seconds
+            setInterval(refreshSignals, 60000);
         };
     </script>
 </body>

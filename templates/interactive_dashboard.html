@@ -207,6 +207,7 @@
         
         <div class="tabs">
             <button class="tab active" onclick="switchTab('stocks')">📈 Stocks</button>
+            <button class="tab" onclick="switchTab('etfs')">🏦 ETFs</button>
             <button class="tab" onclick="switchTab('forex')">💱 Forex</button>
             <button class="tab" onclick="switchTab('commodities')">🛢️ Commodities</button>
             <button class="tab" onclick="switchTab('crypto')">₿ Crypto</button>
@@ -505,6 +506,25 @@
                     const option = document.createElement('option');
                     option.value = commodity.value;
                     option.textContent = commodity.text;
+                    symbolSelect.appendChild(option);
+                });
+            } else if (currentDataType === 'etfs') {
+                const etfs = [
+                    {value: 'SPY', text: 'SPDR S&P 500 ETF (SPY)'},
+                    {value: 'QQQ', text: 'Invesco QQQ Trust (QQQ)'},
+                    {value: 'TQQQ', text: 'ProShares UltraPro QQQ (TQQQ)'},
+                    {value: 'SOXL', text: 'Direxion Semiconductor Bull 3x (SOXL)'},
+                    {value: 'SOXS', text: 'Direxion Semiconductor Bear 3x (SOXS)'},
+                    {value: 'TSLL', text: 'Direxion TSLA Bull 2x (TSLL)'},
+                    {value: 'TSLS', text: 'Direxion TSLA Bear 1x (TSLS)'},
+                    {value: 'TZA', text: 'Direxion Small Cap Bear 3x (TZA)'},
+                    {value: 'IBIT', text: 'iShares Bitcoin Trust (IBIT)'},
+                    {value: 'ETHA', text: 'iShares Ethereum Trust (ETHA)'}
+                ];
+                etfs.forEach(etf => {
+                    const option = document.createElement('option');
+                    option.value = etf.value;
+                    option.textContent = etf.text;
                     symbolSelect.appendChild(option);
                 });
             } else if (currentDataType === 'crypto') {

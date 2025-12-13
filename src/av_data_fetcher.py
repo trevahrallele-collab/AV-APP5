@@ -74,6 +74,10 @@ class AVDataFetcher:
         symbol = commodity_symbols.get(function, 'USO')
         return self.fetch_daily_data(symbol)
     
+    def fetch_etf_data(self, symbol):
+        """Fetch ETF data using the same API as stocks"""
+        return self.fetch_daily_data(symbol)
+    
     def save_to_csv(self, df, filename="data-storage/stock_data.csv"):
         df.to_csv(filename)
         print(f"Data saved to {filename}")

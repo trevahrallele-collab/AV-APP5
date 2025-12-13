@@ -1,0 +1,174 @@
+{
+  "total_signals": 646,
+  "by_symbol": {
+    "MSFT": {
+      "total": 30,
+      "bullish": 16,
+      "bearish": 14
+    },
+    "TSLA": {
+      "total": 32,
+      "bullish": 26,
+      "bearish": 6
+    },
+    "AMZN": {
+      "total": 8,
+      "bullish": 8,
+      "bearish": 0
+    },
+    "GOOGL": {
+      "total": 36,
+      "bullish": 36,
+      "bearish": 0
+    },
+    "AAPL": {
+      "total": 18,
+      "bullish": 18,
+      "bearish": 0
+    },
+    "NPN": {
+      "total": 12,
+      "bullish": 8,
+      "bearish": 4
+    },
+    "SOL": {
+      "total": 12,
+      "bullish": 0,
+      "bearish": 12
+    },
+    "ANG": {
+      "total": 1,
+      "bullish": 1,
+      "bearish": 0
+    },
+    "MTM": {
+      "total": 1,
+      "bullish": 0,
+      "bearish": 1
+    },
+    "GBP_USD": {
+      "total": 24,
+      "bullish": 6,
+      "bearish": 18
+    },
+    "USD_JPY": {
+      "total": 10,
+      "bullish": 10,
+      "bearish": 0
+    },
+    "EUR_USD": {
+      "total": 8,
+      "bullish": 4,
+      "bearish": 4
+    },
+    "USD_CHF": {
+      "total": 10,
+      "bullish": 2,
+      "bearish": 8
+    },
+    "AUD_USD": {
+      "total": 20,
+      "bullish": 12,
+      "bearish": 8
+    },
+    "GOLD": {
+      "total": 26,
+      "bullish": 26,
+      "bearish": 0
+    },
+    "NATURAL_GAS": {
+      "total": 24,
+      "bullish": 12,
+      "bearish": 12
+    },
+    "COPPER": {
+      "total": 12,
+      "bullish": 12,
+      "bearish": 0
+    },
+    "ALUMINUM": {
+      "total": 16,
+      "bullish": 0,
+      "bearish": 16
+    },
+    "BTC": {
+      "total": 32,
+      "bullish": 6,
+      "bearish": 26
+    },
+    "ETH": {
+      "total": 12,
+      "bullish": 0,
+      "bearish": 12
+    },
+    "LTC": {
+      "total": 12,
+      "bullish": 2,
+      "bearish": 10
+    },
+    "SOXS": {
+      "total": 42,
+      "bullish": 0,
+      "bearish": 42
+    },
+    "TSLL": {
+      "total": 32,
+      "bullish": 26,
+      "bearish": 6
+    },
+    "TQQQ": {
+      "total": 26,
+      "bullish": 20,
+      "bearish": 6
+    },
+    "SOXL": {
+      "total": 26,
+      "bullish": 18,
+      "bearish": 8
+    },
+    "SPY": {
+      "total": 26,
+      "bullish": 26,
+      "bearish": 0
+    },
+    "IBIT": {
+      "total": 32,
+      "bullish": 4,
+      "bearish": 28
+    },
+    "QQQ": {
+      "total": 26,
+      "bullish": 24,
+      "bearish": 2
+    },
+    "TZA": {
+      "total": 26,
+      "bullish": 8,
+      "bearish": 18
+    },
+    "ETHA": {
+      "total": 10,
+      "bullish": 0,
+      "bearish": 10
+    },
+    "TSLS": {
+      "total": 34,
+      "bullish": 4,
+      "bearish": 30
+    },
+    "WTI": {
+      "total": 5,
+      "bullish": 0,
+      "bearish": 5
+    },
+    "BRENT": {
+      "total": 5,
+      "bullish": 0,
+      "bearish": 5
+    }
+  },
+  "by_type": {
+    "Bullish": 335,
+    "Bearish": 311
+  }
+}

@@ -257,6 +257,22 @@
             background: rgba(255,255,255,0.1);
             color: white;
         }
+        .install-btn {
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+        .install-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+        }
     </style>
 </head>
 <body>
@@ -276,11 +292,13 @@
             <a href="/dashboard" class="nav-btn">📈 Dashboard</a>
             <button onclick="toggleTheme()" class="nav-btn">🌙 Dark Mode</button>
             <button onclick="showColorWheel()" class="nav-btn" style="background: #ff6b6b;">🎨 Colors</button>
+            <button onclick="showInstallModal()" class="nav-btn" style="background: #28a745;">📦 Install Strategies</button>
         </div>
         
         <div class="tabs">
             <button class="tab active" onclick="switchTab('all')">📊 All Markets</button>
             <button class="tab" onclick="switchTab('stocks')">📈 Stocks</button>
+            <button class="tab" onclick="switchTab('etfs')">🏦 ETFs</button>
             <button class="tab" onclick="switchTab('forex')">💱 Forex</button>
             <button class="tab" onclick="switchTab('commodities')">🛢️ Commodities</button>
             <button class="tab" onclick="switchTab('crypto')">₿ Crypto</button>
@@ -317,6 +335,42 @@
         <div class="chart-container">
             <h2>📊 Win Rate by Asset</h2>
             <div id="winRateChart" style="height: 400px;"></div>
+        </div>
+    </div>
+
+    <!-- Strategy Installation Modal -->
+    <div id="installModal" class="modal">
+        <div class="modal-content" style="width: 600px;">
+            <span class="close" onclick="closeInstallModal()">&times;</span>
+            <h2>📦 Install Trading Strategies</h2>
+            <p>Install strategies to run custom backtests on your data.</p>
+            
+            <div style="margin: 20px 0;">
+                <h3>Available Strategies:</h3>
+                <div style="display: grid; gap: 15px; margin: 15px 0;">
+                    <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px;">
+                        <h4>📊 Order Block Strategy</h4>
+                        <p>SMC-based order block detection with high win rates</p>
+                        <button onclick="installStrategy('ob_refined_strategy')" class="install-btn">📦 Install</button>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px;">
+                        <h4>🔺 Fractal Strategy</h4>
+                        <p>Bill Williams fractal breakout system</p>
+                        <button onclick="installStrategy('fractal_refined_strategy')" class="install-btn">📦 Install</button>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px;">
+                        <h4>🔺📊 Fractal + OB Strategy</h4>
+                        <p>Combined fractal and order block signals</p>
+                        <button onclick="installStrategy('fractal_ob_strategy')" class="install-btn">📦 Install</button>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; margin: 20px 0;">
+                    <button onclick="installAllStrategies()" style="padding: 15px 30px; background: linear-gradient(135deg, #4ecdc4, #44a08d); color: white; border: none; border-radius: 25px; cursor: pointer; font-weight: 600; font-size: 1.1rem;">🚀 Install All Strategies</button>
+                </div>
+            </div>
+            
+            <div id="installStatus" style="margin: 15px 0; padding: 10px; border-radius: 8px; display: none;"></div>
         </div>
     </div>
 
@@ -472,7 +526,7 @@
                     const rClass = summary.avg_outcome_R >= 0 ? 'positive' : 'negative';
                     
                     html += `
-                        <div class="result-card" onclick="showDetails('${dataType}', '${symbol}')">
+                        <div class="result-card" onclick="showSignalDetails('${dataType}', '${symbol}')">
                             <h3>${symbol.replace('_', '/')} (${dataType.toUpperCase()})</h3>
                             <div class="metric">
                                 <span>Total Trades:</span>
@@ -494,6 +548,7 @@
                                 <span>Bearish Trades:</span>
                                 <span class="metric-value">${summary.bearish_trades || 0}</span>
                             </div>
+                            <div style="margin-top: 10px; font-size: 0.8rem; opacity: 0.7;">Click for signal details</div>
                         </div>
                     `;
                 }
@@ -627,12 +682,121 @@
         }
 
         function showDetails(dataType, symbol) {
-            // Get current admin settings
             const startingCapital = document.getElementById('startingCapital').value || 10000;
             const riskPerTrade = document.getElementById('riskPerTrade').value || 100;
-            
-            // Navigate to detailed page with admin settings
             window.location.href = `/backtest/${dataType}/${symbol}?capital=${startingCapital}&risk=${riskPerTrade}`;
+        }
+        
+        function showSignalDetails(dataType, symbol) {
+            const result = backtestData[dataType][symbol];
+            const trades = result.trades;
+            const summary = result.summary;
+            const strategyName = document.getElementById('strategySelect').value;
+            
+            let signalAnalysis = '';
+            
+            // Analyze signal patterns
+            if (trades.length > 0) {
+                const bullishTrades = trades.filter(t => t.type === 'Bullish');
+                const bearishTrades = trades.filter(t => t.type === 'Bearish');
+                const winningTrades = trades.filter(t => t.outcome_R > 0);
+                const losingTrades = trades.filter(t => t.outcome_R <= 0);
+                
+                const avgWinningR = winningTrades.length > 0 ? (winningTrades.reduce((sum, t) => sum + t.outcome_R, 0) / winningTrades.length).toFixed(2) : '0.00';
+                const avgLosingR = losingTrades.length > 0 ? (losingTrades.reduce((sum, t) => sum + t.outcome_R, 0) / losingTrades.length).toFixed(2) : '0.00';
+                
+                signalAnalysis = `
+                    <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; margin: 15px 0;">
+                        <h4>📊 Signal Analysis</h4>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0;">
+                            <div><strong>Bullish Signals:</strong> ${bullishTrades.length}</div>
+                            <div><strong>Bearish Signals:</strong> ${bearishTrades.length}</div>
+                            <div><strong>Winning Trades:</strong> ${winningTrades.length}</div>
+                            <div><strong>Losing Trades:</strong> ${losingTrades.length}</div>
+                            <div><strong>Avg Win:</strong> <span class="positive">${avgWinningR}R</span></div>
+                            <div><strong>Avg Loss:</strong> <span class="negative">${avgLosingR}R</span></div>
+                        </div>
+                    </div>
+                    
+                    <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; margin: 15px 0;">
+                        <h4>🎯 Signal Quality</h4>
+                        <div style="margin: 10px 0;">
+                            <div><strong>Signal Frequency:</strong> ${(trades.length / 365 * 12).toFixed(1)} signals/month</div>
+                            <div><strong>Best Signal Type:</strong> ${bullishTrades.length > bearishTrades.length ? 'Bullish' : bearishTrades.length > bullishTrades.length ? 'Bearish' : 'Balanced'}</div>
+                            <div><strong>Risk-Reward Ratio:</strong> ${winningTrades.length > 0 && losingTrades.length > 0 ? (Math.abs(avgWinningR) / Math.abs(avgLosingR)).toFixed(2) : 'N/A'}</div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            let tradesHtml = '';
+            if (trades.length > 0) {
+                tradesHtml = `
+                    <div style="max-height: 300px; overflow-y: auto; margin: 15px 0;">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                            <thead>
+                                <tr style="background: rgba(255,255,255,0.1);">
+                                    <th style="padding: 8px; border: 1px solid rgba(255,255,255,0.2);">Date</th>
+                                    <th style="padding: 8px; border: 1px solid rgba(255,255,255,0.2);">Type</th>
+                                    <th style="padding: 8px; border: 1px solid rgba(255,255,255,0.2);">Entry</th>
+                                    <th style="padding: 8px; border: 1px solid rgba(255,255,255,0.2);">Outcome</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+                
+                trades.slice(0, 10).forEach(trade => {
+                    const outcomeClass = trade.outcome_R >= 0 ? 'positive' : 'negative';
+                    tradesHtml += `
+                        <tr>
+                            <td style="padding: 6px; border: 1px solid rgba(255,255,255,0.1);">${new Date(trade.entry_date).toLocaleDateString()}</td>
+                            <td style="padding: 6px; border: 1px solid rgba(255,255,255,0.1);">${trade.type}</td>
+                            <td style="padding: 6px; border: 1px solid rgba(255,255,255,0.1);">${trade.entry.toFixed(4)}</td>
+                            <td style="padding: 6px; border: 1px solid rgba(255,255,255,0.1);" class="${outcomeClass}">${trade.outcome_R.toFixed(2)}R</td>
+                        </tr>
+                    `;
+                });
+                
+                if (trades.length > 10) {
+                    tradesHtml += `<tr><td colspan="4" style="text-align: center; padding: 10px; font-style: italic;">... and ${trades.length - 10} more trades</td></tr>`;
+                }
+                
+                tradesHtml += '</tbody></table></div>';
+            } else {
+                tradesHtml = '<p style="text-align: center; padding: 20px;">No trading signals found for this symbol.</p>';
+            }
+            
+            document.getElementById('modalContent').innerHTML = `
+                <h2>🔍 ${symbol.replace('_', '/')} (${dataType.toUpperCase()}) - Signal Details</h2>
+                <p><strong>Strategy:</strong> ${strategyName.replace('_', ' ').toUpperCase()}</p>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin: 20px 0;">
+                    <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: bold;">${summary.num_trades}</div>
+                        <div style="font-size: 0.9rem; opacity: 0.8;">Total Signals</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: ${summary.avg_outcome_R >= 0 ? '#4caf50' : '#f44336'};">${summary.avg_outcome_R.toFixed(2)}R</div>
+                        <div style="font-size: 0.9rem; opacity: 0.8;">Average Return</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: bold;">${(summary.win_rate_pos_R * 100).toFixed(1)}%</div>
+                        <div style="font-size: 0.9rem; opacity: 0.8;">Win Rate</div>
+                    </div>
+                </div>
+                
+                ${signalAnalysis}
+                
+                <h3>📋 Recent Trading Signals:</h3>
+                ${tradesHtml}
+                
+                <div style="text-align: center; margin-top: 20px;">
+                    <button onclick="showDetails('${dataType}', '${symbol}')" style="padding: 12px 25px; background: linear-gradient(135deg, #4ecdc4, #44a08d); color: white; border: none; border-radius: 25px; cursor: pointer; font-weight: 600; margin: 5px;">📊 Full Analysis</button>
+                    <button onclick="closeModal()" style="padding: 12px 25px; background: rgba(255,255,255,0.2); color: white; border: none; border-radius: 25px; cursor: pointer; font-weight: 600; margin: 5px;">Close</button>
+                </div>
+            `;
+            
+            document.getElementById('detailModal').style.display = 'block';
         }
         
         function showDetailsOld(dataType, symbol) {
@@ -740,6 +904,80 @@
             document.getElementById('colorModal').style.display = 'none';
         }
         
+        function showInstallModal() {
+            document.getElementById('installModal').style.display = 'block';
+        }
+        
+        function closeInstallModal() {
+            document.getElementById('installModal').style.display = 'none';
+        }
+        
+        async function installStrategy(strategyName) {
+            const statusDiv = document.getElementById('installStatus');
+            statusDiv.style.display = 'block';
+            statusDiv.style.background = 'rgba(255, 193, 7, 0.2)';
+            statusDiv.style.color = '#ffc107';
+            statusDiv.innerHTML = `📦 Installing ${strategyName}...`;
+            
+            try {
+                const response = await fetch('/api/install-strategy', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({strategy: strategyName})
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    statusDiv.style.background = 'rgba(40, 167, 69, 0.2)';
+                    statusDiv.style.color = '#28a745';
+                    statusDiv.innerHTML = `✅ ${strategyName} installed successfully!`;
+                } else {
+                    throw new Error(result.error || 'Installation failed');
+                }
+            } catch (error) {
+                statusDiv.style.background = 'rgba(220, 53, 69, 0.2)';
+                statusDiv.style.color = '#dc3545';
+                statusDiv.innerHTML = `❌ Error installing ${strategyName}: ${error.message}`;
+            }
+        }
+        
+        async function installAllStrategies() {
+            const strategies = ['ob_refined_strategy', 'fractal_refined_strategy', 'fractal_ob_strategy'];
+            const statusDiv = document.getElementById('installStatus');
+            statusDiv.style.display = 'block';
+            statusDiv.style.background = 'rgba(255, 193, 7, 0.2)';
+            statusDiv.style.color = '#ffc107';
+            statusDiv.innerHTML = '🚀 Installing all strategies...';
+            
+            let successCount = 0;
+            
+            for (const strategy of strategies) {
+                try {
+                    const response = await fetch('/api/install-strategy', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({strategy: strategy})
+                    });
+                    
+                    const result = await response.json();
+                    if (result.success) successCount++;
+                } catch (error) {
+                    console.error(`Failed to install ${strategy}:`, error);
+                }
+            }
+            
+            if (successCount === strategies.length) {
+                statusDiv.style.background = 'rgba(40, 167, 69, 0.2)';
+                statusDiv.style.color = '#28a745';
+                statusDiv.innerHTML = `✅ All ${successCount} strategies installed successfully!`;
+            } else {
+                statusDiv.style.background = 'rgba(255, 193, 7, 0.2)';
+                statusDiv.style.color = '#ffc107';
+                statusDiv.innerHTML = `⚠️ Installed ${successCount}/${strategies.length} strategies. Check console for errors.`;
+            }
+        }
+        
         function hslToHex(h, s, l) {
             l /= 100;
             const a = s * Math.min(l, 1 - l) / 100;
@@ -838,6 +1076,10 @@
             }
             if (event.target === colorModal) {
                 closeColorModal();
+            }
+            const installModal = document.getElementById('installModal');
+            if (event.target === installModal) {
+                closeInstallModal();
             }
         }
     </script>
