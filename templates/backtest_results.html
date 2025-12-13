@@ -148,8 +148,15 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>📊 Order Block Strategy Backtest Results</h1>
+            <h1 id="pageTitle">📊 Trading Strategy Backtest Results</h1>
             <p>Comprehensive analysis across all market data</p>
+            <div class="strategy-selector">
+                <label>Strategy:</label>
+                <select id="strategySelect" onchange="switchStrategy()" style="padding: 8px; border: none; border-radius: 5px; margin: 0 10px;">
+                    <option value="ob_refined_strategy">Order Block Strategy</option>
+                    <option value="fractal_refined_strategy">Fractal Strategy</option>
+                </select>
+            </div>
             <a href="/" class="nav-btn">🏠 Back to Main</a>
             <a href="/dashboard" class="nav-btn">📈 Dashboard</a>
             <button onclick="toggleTheme()" class="nav-btn">🌙 Dark Mode</button>
@@ -213,10 +220,22 @@
         window.onload = function() {
             loadBacktestResults();
         };
+        
+        function switchStrategy() {
+            const strategyName = document.getElementById('strategySelect').value;
+            const titleMap = {
+                'ob_refined_strategy': '📊 Order Block Strategy Results',
+                'fractal_refined_strategy': '🔺 Fractal Strategy Results'
+            };
+            document.getElementById('pageTitle').textContent = titleMap[strategyName] || '📊 Trading Strategy Results';
+            loadBacktestResults();
+        }
 
         async function loadBacktestResults() {
             try {
-                const response = await fetch('/api/backtest-results');
+                const strategyName = document.getElementById('strategySelect').value;
+                const apiUrl = strategyName === 'ob_refined_strategy' ? '/api/backtest-results' : `/api/strategy-results/${strategyName}`;
+                const response = await fetch(apiUrl);
                 backtestData = await response.json();
                 
                 if (backtestData.error) {

@@ -121,6 +121,15 @@ def api_backtest_results():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/strategy-results/<strategy_name>')
+def api_strategy_results(strategy_name):
+    try:
+        with open(f'../cache/{strategy_name}_results.json', 'r') as f:
+            results = json.load(f)
+        return jsonify(results)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/api/fetch-data')
 def fetch_data():
     data_type = request.args.get('type', 'stocks')

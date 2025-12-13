@@ -1,0 +1,17 @@
+{
+    "name": "Fractal Strategy",
+    "description": "Bill Williams fractal breakout strategy with EMA trend filter and ATR-based stops",
+    "parameters": {
+        "left_bars": 2,
+        "right_bars": 2,
+        "lookback": 20,
+        "ema_period": 50,
+        "atr_period": 14,
+        "atr_mult_stop": 2.0,
+        "risk_per_trade": 0.01
+    },
+    "ui_settings": {
+        "color": "#ff6b6b",
+        "icon": "🔺"
+    }
+}
