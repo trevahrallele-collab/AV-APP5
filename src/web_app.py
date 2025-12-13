@@ -145,6 +145,8 @@ def fetch_data():
             db_path = "../database/stock_data.db"
         elif data_type == 'forex':
             db_path = "../database/forex_data.db"
+        elif data_type == 'crypto':
+            db_path = "../database/stock_data.db"  # Crypto stored in stock db for now
         else:  # commodities
             db_path = "../database/commodity_data.db"
         
@@ -156,6 +158,8 @@ def fetch_data():
         elif data_type == 'forex':
             from_symbol, to_symbol = symbol.split('/')
             df = fetcher.fetch_forex_data(from_symbol, to_symbol)
+        elif data_type == 'crypto':
+            df = fetcher.fetch_daily_data(symbol)  # Crypto uses same API as stocks
         else:  # commodities
             df = fetcher.fetch_commodity_data(symbol)
         

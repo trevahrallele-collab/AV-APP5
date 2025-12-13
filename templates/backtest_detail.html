@@ -283,6 +283,7 @@
             <a href="/" class="nav-btn">🏠 Main</a>
             <a href="/dashboard" class="nav-btn">📈 Dashboard</a>
             <button onclick="toggleTheme()" class="nav-btn">🌙 Dark Mode</button>
+            <button onclick="showColorWheel()" class="nav-btn" style="background: #ff6b6b;">🎨 Colors</button>
             <button onclick="showRecalcModal()" class="nav-btn" style="background: #28a745;">🔄 Recalculate</button>
         </div>
         
@@ -331,6 +332,27 @@
             <div style="margin-top: 20px;">
                 <button class="btn-primary" onclick="recalculate()">🔄 Recalculate</button>
                 <button class="btn-secondary" onclick="closeRecalcModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Color Wheel Modal -->
+    <div id="colorModal" class="modal">
+        <div class="modal-content" style="width: 500px;">
+            <h3>🎨 Background Colors</h3>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 30px; margin: 20px 0;">
+                <div class="color-wheel" id="colorWheel2" style="width: 120px; height: 120px; background: conic-gradient(from 0deg, #ff0000, #ff8000, #ffff00, #80ff00, #00ff00, #00ff80, #00ffff, #0080ff, #0000ff, #8000ff, #ff00ff, #ff0080, #ff0000); border-radius: 50%; cursor: pointer; position: relative;">
+                    <div id="wheelPointer2" style="position: absolute; top: 5px; left: 50%; transform: translateX(-50%); width: 15px; height: 15px; background: white; border-radius: 50%; border: 2px solid #333;"></div>
+                </div>
+                <div>
+                    <input type="range" id="lightnessSlider2" min="0" max="100" value="50" style="width: 120px; margin-bottom: 10px;">
+                    <div style="text-align: center; color: white; font-size: 0.9rem;">Lightness</div>
+                </div>
+                <div id="colorPreview2" style="width: 60px; height: 60px; border-radius: 10px; background: #4ecdc4; border: 2px solid white;"></div>
+            </div>
+            <div style="margin-top: 20px;">
+                <button class="btn-primary" onclick="applyBackground2()">🎨 Apply Background</button>
+                <button class="btn-secondary" onclick="closeColorModal()">Cancel</button>
             </div>
         </div>
     </div>
@@ -740,6 +762,12 @@
             document.body.classList.toggle('dark');
             const btn = document.querySelector('button[onclick="toggleTheme()"]');
             btn.textContent = document.body.classList.contains('dark') ? '☀️ Light Mode' : '🌙 Dark Mode';
+            
+            // Reapply custom background if exists
+            const savedBg = localStorage.getItem('customBg');
+            if (savedBg) {
+                document.body.style.background = savedBg;
+            }
         }
         
         function toggleTradeDetails() {
@@ -802,11 +830,89 @@
             }
         }
         
+        let currentHue2 = 176;
+        let currentLightness2 = 60;
+        
+        function showColorWheel() {
+            document.getElementById('colorModal').style.display = 'block';
+        }
+        
+        function closeColorModal() {
+            document.getElementById('colorModal').style.display = 'none';
+        }
+        
+        function hslToHex(h, s, l) {
+            l /= 100;
+            const a = s * Math.min(l, 1 - l) / 100;
+            const f = n => {
+                const k = (n + h / 30) % 12;
+                const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+                return Math.round(255 * color).toString(16).padStart(2, '0');
+            };
+            return `#${f(0)}${f(8)}${f(4)}`;
+        }
+        
+        function updateColor2() {
+            const hex = hslToHex(currentHue2, 61, currentLightness2);
+            document.getElementById('colorPreview2').style.background = hex;
+        }
+        
+        function applyBackground2() {
+            const color1 = hslToHex(currentHue2, 61, Math.max(currentLightness2 - 20, 10));
+            const color2 = hslToHex((currentHue2 + 30) % 360, 61, Math.min(currentLightness2 + 20, 90));
+            const gradient = `linear-gradient(135deg, ${color1} 0%, ${color2} 100%)`;
+            
+            document.body.style.background = gradient;
+            localStorage.setItem('customBg', gradient);
+            closeColorModal();
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load saved background
+            const savedBg = localStorage.getItem('customBg');
+            if (savedBg) {
+                document.body.style.background = savedBg;
+            }
+            
+            // Color wheel functionality
+            const wheel2 = document.getElementById('colorWheel2');
+            const slider2 = document.getElementById('lightnessSlider2');
+            
+            if (wheel2) {
+                wheel2.addEventListener('click', function(e) {
+                    const rect = wheel2.getBoundingClientRect();
+                    const centerX = rect.left + rect.width / 2;
+                    const centerY = rect.top + rect.height / 2;
+                    const angle = Math.atan2(e.clientY - centerY, e.clientX - centerX);
+                    const degrees = (angle * 180 / Math.PI + 90 + 360) % 360;
+                    
+                    currentHue2 = Math.round(degrees);
+                    const pointer = document.getElementById('wheelPointer2');
+                    pointer.style.transform = `translateX(-50%) rotate(${degrees}deg)`;
+                    pointer.style.transformOrigin = '50% 55px';
+                    updateColor2();
+                });
+            }
+            
+            if (slider2) {
+                slider2.addEventListener('input', function(e) {
+                    currentLightness2 = parseInt(e.target.value);
+                    updateColor2();
+                });
+            }
+            
+            updateColor2();
+        });
+        
         // Close modal when clicking outside
         window.onclick = function(event) {
-            const modal = document.getElementById('recalcModal');
-            if (event.target === modal) {
+            const recalcModal = document.getElementById('recalcModal');
+            const colorModal = document.getElementById('colorModal');
+            if (event.target === recalcModal) {
                 closeRecalcModal();
+            }
+            if (event.target === colorModal) {
+                closeColorModal();
             }
         }
     </script>

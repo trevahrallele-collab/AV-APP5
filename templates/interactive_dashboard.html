@@ -140,6 +140,7 @@
             <button class="tab active" onclick="switchTab('stocks')">📈 Stocks</button>
             <button class="tab" onclick="switchTab('forex')">💱 Forex</button>
             <button class="tab" onclick="switchTab('commodities')">🛢️ Commodities</button>
+            <button class="tab" onclick="switchTab('crypto')">₿ Crypto</button>
         </div>
         
         <div class="controls">
@@ -427,6 +428,20 @@
                     const option = document.createElement('option');
                     option.value = commodity.value;
                     option.textContent = commodity.text;
+                    symbolSelect.appendChild(option);
+                });
+            } else if (currentDataType === 'crypto') {
+                const cryptos = [
+                    {value: 'BTC', text: 'Bitcoin (BTC)'},
+                    {value: 'ETH', text: 'Ethereum (ETH)'},
+                    {value: 'SOL', text: 'Solana (SOL)'},
+                    {value: 'LTC', text: 'Litecoin (LTC)'},
+                    {value: 'XRP', text: 'Ripple (XRP)'}
+                ];
+                cryptos.forEach(crypto => {
+                    const option = document.createElement('option');
+                    option.value = crypto.value;
+                    option.textContent = crypto.text;
                     symbolSelect.appendChild(option);
                 });
             }
