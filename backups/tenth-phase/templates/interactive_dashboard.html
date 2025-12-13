@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Interactive Stock Dashboard</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .tabs {
+            display: flex;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .tab {
+            flex: 1;
+            padding: 15px 20px;
+            text-align: center;
+            cursor: pointer;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: white;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        .tab.active {
+            background: rgba(255,255,255,0.3);
+            color: #333;
+        }
+        .tab:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        .controls {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .control-group label { font-weight: bold; font-size: 14px; }
+        select, input, button {
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        button {
+            background: #ff6b6b;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        button:hover { background: #ee5a24; transform: translateY(-2px); }
+        .chart-container {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .chart-container.fullscreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 9999;
+            margin: 0;
+            border-radius: 0;
+            background: rgba(0,0,0,0.95);
+        }
+        .chart-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 5px;
+        }
+        .chart-btn {
+            padding: 8px 12px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .chart-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        .loading { text-align: center; padding: 50px; font-size: 18px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📈 Interactive Stock Dashboard</h1>
+            <p>Real-time stock data with interactive controls</p>
+            <div style="margin-top: 20px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                <button onclick="window.location.href='/'" style="padding: 12px 24px; background: #6c757d; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">🏠 Back to Main</button>
+                <button onclick="updateChart()" style="padding: 12px 24px; background: #ff6b6b; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">🔄 Update Chart</button>
+                <button onclick="toggleTheme()" style="padding: 12px 24px; background: rgba(255,255,255,0.2); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">🌙 Dark Mode</button>
+            </div>
+            <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: center; align-items: center; flex-wrap: wrap;">
+                <button onclick="startReverse()" style="padding: 8px 16px; background: #6c757d; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">⏪ Reverse</button>
+                <button id="playBtn" onclick="togglePlay()" style="padding: 8px 16px; background: #28a745; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">▶️ Play</button>
+                <button onclick="pauseReplay()" style="padding: 8px 16px; background: #ffc107; color: black; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">⏸️ Pause</button>
+                <select id="speedSelect" onchange="changeSpeed()" style="padding: 8px; border: none; border-radius: 6px; font-weight: bold;">
+                    <option value="50">4x Speed</option>
+                    <option value="100">2x Speed</option>
+                    <option value="200" selected>1x Speed</option>
+                    <option value="500">0.5x Speed</option>
+                    <option value="1000">0.25x Speed</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('stocks')">📈 Stocks</button>
+            <button class="tab" onclick="switchTab('forex')">💱 Forex</button>
+            <button class="tab" onclick="switchTab('commodities')">🛢️ Commodities</button>
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label>Symbol:</label>
+                <select id="symbol">
+                    <option value="AAPL">Apple (AAPL)</option>
+                    <option value="GOOGL">Google (GOOGL)</option>
+                    <option value="MSFT">Microsoft (MSFT)</option>
+                    <option value="TSLA">Tesla (TSLA)</option>
+                    <option value="AMZN">Amazon (AMZN)</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Chart Type:</label>
+                <select id="chartType">
+                    <option value="line">Line Chart</option>
+                    <option value="candlestick">Candlestick</option>
+                    <option value="ohlc">OHLC</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Time Range:</label>
+                <select id="timeRange">
+                    <option value="1M">1 Month</option>
+                    <option value="3M">3 Months</option>
+                    <option value="6M">6 Months</option>
+                    <option value="1Y">1 Year</option>
+                    <option value="2Y">2 Years</option>
+                </select>
+            </div>
+
+        </div>
+        
+        <div class="chart-container" id="chartContainer">
+            <div class="chart-controls">
+                <button class="chart-btn" onclick="toggleFullscreen()" id="fullscreenBtn">🔍 Maximize</button>
+                <button class="chart-btn" onclick="minimizeChart()" id="minimizeBtn" style="display: none;">➖ Minimize</button>
+            </div>
+            <div id="chart" style="height: 600px;"></div>
+        </div>
+        
+        <div class="chart-container" id="volumeContainer">
+            <div id="volumeChart" style="height: 200px;"></div>
+        </div>
+        
+        <!-- Metrics Cards -->
+        <div id="metricsContainer" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 20px;">
+            <!-- Metrics cards will be populated here -->
+        </div>
+        
+        <!-- Detail Modal -->
+        <div id="detailModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 10000; backdrop-filter: blur(5px);">
+            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255,255,255,0.95); border-radius: 15px; padding: 30px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; color: #333;">
+                <button onclick="closeDetailModal()" style="position: absolute; top: 15px; right: 15px; background: #ff6b6b; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-weight: bold;">×</button>
+                <div id="modalContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentData = null;
+        let isDark = false;
+        let currentDataType = 'stocks';
+        let isPlaying = false;
+        let replayInterval = null;
+        let replayIndex = 5;
+        let replayDirection = 1; // 1 for forward, -1 for reverse
+        let replaySpeed = 200;
+
+        // Initialize with default chart
+        window.onload = function() {
+            updateSymbolOptions();
+            updateChart();
+        };
+        
+        function togglePlay() {
+            const btn = document.getElementById('playBtn');
+            
+            if (isPlaying) {
+                stopReplay();
+            } else {
+                startPlay();
+            }
+        }
+        
+        function startPlay() {
+            if (!currentData) {
+                alert('Please load data first by updating the chart');
+                return;
+            }
+            
+            isPlaying = true;
+            replayDirection = 1;
+            const btn = document.getElementById('playBtn');
+            btn.textContent = '⏹️ Stop';
+            btn.style.background = '#dc3545';
+            
+            replayInterval = setInterval(replayStep, replaySpeed);
+        }
+        
+        function startReverse() {
+            if (!currentData) {
+                alert('Please load data first by updating the chart');
+                return;
+            }
+            
+            if (isPlaying) stopReplay();
+            
+            isPlaying = true;
+            replayDirection = -1;
+            const btn = document.getElementById('playBtn');
+            btn.textContent = '⏹️ Stop';
+            btn.style.background = '#dc3545';
+            
+            replayInterval = setInterval(replayStep, replaySpeed);
+        }
+        
+        function pauseReplay() {
+            if (isPlaying) {
+                clearInterval(replayInterval);
+                isPlaying = false;
+                const btn = document.getElementById('playBtn');
+                btn.textContent = '▶️ Play';
+                btn.style.background = '#28a745';
+            }
+        }
+        
+        function stopReplay() {
+            clearInterval(replayInterval);
+            isPlaying = false;
+            const btn = document.getElementById('playBtn');
+            btn.textContent = '▶️ Play';
+            btn.style.background = '#28a745';
+            
+            // Show full data
+            if (currentData) {
+                renderChart(currentData, document.getElementById('chartType').value, currentDataType);
+                if (currentDataType === 'stocks') {
+                    renderVolumeChart(currentData);
+                }
+            }
+        }
+        
+        function changeSpeed() {
+            replaySpeed = parseInt(document.getElementById('speedSelect').value);
+            
+            // Restart interval with new speed if playing
+            if (isPlaying) {
+                clearInterval(replayInterval);
+                replayInterval = setInterval(replayStep, replaySpeed);
+            }
+        }
+        
+        function replayStep() {
+            if (!currentData) return;
+            
+            replayIndex += replayDirection;
+            
+            // Boundary checks
+            if (replayIndex < 5) {
+                replayIndex = 5;
+                if (replayDirection === -1) pauseReplay();
+            }
+            if (replayIndex > currentData.dates.length) {
+                replayIndex = currentData.dates.length;
+                if (replayDirection === 1) pauseReplay();
+            }
+            
+            // Create subset of data up to current index
+            const replayData = {
+                dates: currentData.dates.slice(0, replayIndex),
+                prices: {
+                    open: currentData.prices.open.slice(0, replayIndex),
+                    high: currentData.prices.high.slice(0, replayIndex),
+                    low: currentData.prices.low.slice(0, replayIndex),
+                    close: currentData.prices.close.slice(0, replayIndex),
+                    volume: currentData.prices.volume.slice(0, replayIndex)
+                }
+            };
+            
+            renderChart(replayData, document.getElementById('chartType').value, currentDataType);
+            if (currentDataType === 'stocks') {
+                renderVolumeChart(replayData);
+            }
+        }
+        
+        function toggleFullscreen() {
+            const container = document.getElementById('chartContainer');
+            const chart = document.getElementById('chart');
+            const volumeContainer = document.getElementById('volumeContainer');
+            const fullscreenBtn = document.getElementById('fullscreenBtn');
+            const minimizeBtn = document.getElementById('minimizeBtn');
+            
+            if (container.classList.contains('fullscreen')) {
+                // Exit fullscreen
+                container.classList.remove('fullscreen');
+                chart.style.height = '600px';
+                volumeContainer.style.display = 'block';
+                fullscreenBtn.style.display = 'block';
+                minimizeBtn.style.display = 'none';
+                fullscreenBtn.textContent = '🔍 Maximize';
+            } else {
+                // Enter fullscreen
+                container.classList.add('fullscreen');
+                chart.style.height = 'calc(100vh - 40px)';
+                volumeContainer.style.display = 'none';
+                fullscreenBtn.style.display = 'none';
+                minimizeBtn.style.display = 'block';
+            }
+            
+            // Resize chart
+            setTimeout(() => {
+                if (currentData) {
+                    if (isPlaying) {
+                        replayStep();
+                    } else {
+                        renderChart(currentData, document.getElementById('chartType').value, currentDataType);
+                        if (currentDataType === 'stocks') {
+                            renderVolumeChart(currentData);
+                        }
+                    }
+                }
+            }, 100);
+        }
+        
+        function minimizeChart() {
+            toggleFullscreen();
+        }
+        
+        function switchTab(dataType) {
+            // Update active tab
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Update current data type
+            currentDataType = dataType;
+            
+            // Update symbol options and chart
+            updateSymbolOptions();
+            updateChart();
+        }
+
+        function updateSymbolOptions() {
+            const symbolSelect = document.getElementById('symbol');
+            
+            symbolSelect.innerHTML = '';
+            
+            if (currentDataType === 'stocks') {
+                const stocks = [
+                    {value: 'AAPL', text: 'Apple (AAPL)'},
+                    {value: 'GOOGL', text: 'Google (GOOGL)'},
+                    {value: 'MSFT', text: 'Microsoft (MSFT)'},
+                    {value: 'TSLA', text: 'Tesla (TSLA)'},
+                    {value: 'AMZN', text: 'Amazon (AMZN)'}
+                ];
+                stocks.forEach(stock => {
+                    const option = document.createElement('option');
+                    option.value = stock.value;
+                    option.textContent = stock.text;
+                    symbolSelect.appendChild(option);
+                });
+            } else if (currentDataType === 'forex') {
+                const pairs = [
+                    {value: 'EUR/USD', text: 'EUR/USD'},
+                    {value: 'GBP/USD', text: 'GBP/USD'},
+                    {value: 'USD/JPY', text: 'USD/JPY'},
+                    {value: 'USD/CHF', text: 'USD/CHF'},
+                    {value: 'AUD/USD', text: 'AUD/USD'}
+                ];
+                pairs.forEach(pair => {
+                    const option = document.createElement('option');
+                    option.value = pair.value;
+                    option.textContent = pair.text;
+                    symbolSelect.appendChild(option);
+                });
+            } else if (currentDataType === 'commodities') {
+                const commodities = [
+                    {value: 'GOLD', text: 'Gold'},
+                    {value: 'NATURAL_GAS', text: 'Natural Gas'},
+                    {value: 'COPPER', text: 'Copper'},
+                    {value: 'ALUMINUM', text: 'Aluminum'}
+                ];
+                commodities.forEach(commodity => {
+                    const option = document.createElement('option');
+                    option.value = commodity.value;
+                    option.textContent = commodity.text;
+                    symbolSelect.appendChild(option);
+                });
+            }
+        }
+
+        async function updateChart() {
+            const symbol = document.getElementById('symbol').value;
+            const chartType = document.getElementById('chartType').value;
+            const timeRange = document.getElementById('timeRange').value;
+            
+            document.getElementById('chart').innerHTML = '<div class="loading">Loading chart data...</div>';
+            document.getElementById('volumeChart').innerHTML = '<div class="loading">Loading volume data...</div>';
+            
+            try {
+                const response = await fetch(`/api/data?type=${currentDataType}&symbol=${symbol}&range=${timeRange}`);
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                } else {
+                    currentData = data;
+                    renderChart(data, chartType, currentDataType);
+                    if (currentDataType === 'stocks') {
+                        renderVolumeChart(data);
+                    } else {
+                        document.getElementById('volumeChart').innerHTML = '';
+                    }
+                    createMetricsCards(data);
+                    // Store data globally for trade analysis
+                    window.currentChartData = data;
+                }
+                
+            } catch (error) {
+                document.getElementById('chart').innerHTML = `<div class="loading">Error: ${error.message}</div>`;
+                document.getElementById('volumeChart').innerHTML = '';
+            }
+        }
+
+        function renderChart(data, chartType, dataType) {
+            const dates = data.dates;
+            const prices = data.prices;
+            
+            let trace;
+            
+            if (chartType === 'line') {
+                trace = {
+                    x: dates,
+                    y: prices.close,
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Close Price',
+                    line: { color: '#1f77b4', width: 2 }
+                };
+            } else if (chartType === 'candlestick') {
+                trace = {
+                    x: dates,
+                    open: prices.open,
+                    high: prices.high,
+                    low: prices.low,
+                    close: prices.close,
+                    type: 'candlestick',
+                    name: 'Candlestick'
+                };
+            } else if (chartType === 'ohlc') {
+                trace = {
+                    x: dates,
+                    open: prices.open,
+                    high: prices.high,
+                    low: prices.low,
+                    close: prices.close,
+                    type: 'ohlc',
+                    name: 'OHLC'
+                };
+            }
+            
+            const symbol = document.getElementById('symbol').value;
+            const yAxisTitle = dataType === 'forex' ? 'Exchange Rate' : dataType === 'commodities' ? 'Price' : 'Price ($)';
+            
+            const layout = {
+                title: `${symbol} ${dataType.charAt(0).toUpperCase() + dataType.slice(1)} Chart`,
+                xaxis: { title: 'Date', type: 'date' },
+                yaxis: { title: yAxisTitle },
+                template: isDark ? 'plotly_dark' : 'plotly_white',
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                margin: { t: 50, r: 50, b: 50, l: 50 }
+            };
+            
+            Plotly.newPlot('chart', [trace], layout, {responsive: true});
+        }
+
+        function renderVolumeChart(data) {
+            const trace = {
+                x: data.dates,
+                y: data.prices.volume,
+                type: 'bar',
+                name: 'Volume',
+                marker: { color: '#ff6b6b' }
+            };
+            
+            const layout = {
+                title: 'Trading Volume',
+                xaxis: { title: 'Date', type: 'date' },
+                yaxis: { title: 'Volume' },
+                template: isDark ? 'plotly_dark' : 'plotly_white',
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                margin: { t: 50, r: 50, b: 50, l: 50 }
+            };
+            
+            Plotly.newPlot('volumeChart', [trace], layout, {responsive: true});
+        }
+        
+        function createMetricsCards(data) {
+            const container = document.getElementById('metricsContainer');
+            const symbol = document.getElementById('symbol').value;
+            const prices = data.prices;
+            const dates = data.dates;
+            
+            // Calculate metrics
+            const latest = prices.close[prices.close.length - 1];
+            const previous = prices.close[prices.close.length - 2];
+            const change = latest - previous;
+            const changePercent = ((change / previous) * 100).toFixed(2);
+            const high52w = Math.max(...prices.high);
+            const low52w = Math.min(...prices.low);
+            const avgVolume = prices.volume ? (prices.volume.reduce((a, b) => a + b, 0) / prices.volume.length).toFixed(0) : 'N/A';
+            
+            // Analyze trades and signals
+            const trades = analyzeTradeSignals(data);
+            const profitableTrades = trades.filter(t => t.profit > 0);
+            const losingTrades = trades.filter(t => t.profit < 0);
+            const totalProfit = trades.reduce((sum, t) => sum + t.profit, 0);
+            const winRate = trades.length > 0 ? ((profitableTrades.length / trades.length) * 100).toFixed(1) : '0';
+            
+            const metrics = [
+                {
+                    title: `${symbol} Trading Analysis`,
+                    value: `${trades.length} Trades`,
+                    change: `Win Rate: ${winRate}%`,
+                    color: parseFloat(winRate) >= 50 ? '#28a745' : '#dc3545',
+                    details: {
+                        'Total Trades': trades.length,
+                        'Profitable Trades': profitableTrades.length,
+                        'Losing Trades': losingTrades.length,
+                        'Win Rate': `${winRate}%`,
+                        'Total P&L': `$${totalProfit.toFixed(2)}`,
+                        'Avg Profit per Trade': trades.length > 0 ? `$${(totalProfit / trades.length).toFixed(2)}` : '$0.00'
+                    },
+                    trades: trades
+                },
+                {
+                    title: `${symbol} Price Action`,
+                    value: `$${latest.toFixed(2)}`,
+                    change: `${change >= 0 ? '+' : ''}${change.toFixed(2)} (${changePercent}%)`,
+                    color: change >= 0 ? '#28a745' : '#dc3545',
+                    details: {
+                        'Current Price': `$${latest.toFixed(2)}`,
+                        'Previous Close': `$${previous.toFixed(2)}`,
+                        'Daily Change': `$${change.toFixed(2)}`,
+                        'Daily Change %': `${changePercent}%`,
+                        '52W High': `$${high52w.toFixed(2)}`,
+                        '52W Low': `$${low52w.toFixed(2)}`,
+                        'Distance from High': `${(((latest - high52w) / high52w) * 100).toFixed(2)}%`,
+                        'Distance from Low': `${(((latest - low52w) / low52w) * 100).toFixed(2)}%`
+                    }
+                }
+            ];
+            
+            if (prices.volume) {
+                const latestVolume = prices.volume[prices.volume.length - 1];
+                const volumeSpikes = findVolumeSpikes(data);
+                metrics.push({
+                    title: 'Volume Analysis',
+                    value: formatNumber(latestVolume),
+                    change: `${volumeSpikes.length} Spikes`,
+                    color: '#17a2b8',
+                    details: {
+                        'Latest Volume': formatNumber(latestVolume),
+                        'Average Volume': formatNumber(avgVolume),
+                        'Max Volume': formatNumber(Math.max(...prices.volume)),
+                        'Volume Spikes': volumeSpikes.length,
+                        'Volume Trend': latestVolume > avgVolume ? 'Above Average' : 'Below Average'
+                    },
+                    volumeSpikes: volumeSpikes
+                });
+            }
+            
+            container.innerHTML = metrics.map((metric, index) => `
+                <div class="metric-card" onclick="showMetricDetails('${metric.title}', ${index})" style="
+                    background: rgba(255,255,255,0.1);
+                    backdrop-filter: blur(10px);
+                    border-radius: 15px;
+                    padding: 20px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    border: 2px solid transparent;
+                " onmouseover="this.style.transform='translateY(-5px)'; this.style.borderColor='rgba(255,255,255,0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='transparent'">
+                    <h3 style="margin: 0 0 10px 0; font-size: 16px; opacity: 0.9;">${metric.title}</h3>
+                    <div style="font-size: 24px; font-weight: bold; margin: 10px 0;">${metric.value}</div>
+                    <div style="color: ${metric.color}; font-weight: bold; font-size: 14px;">${metric.change}</div>
+                    <div style="margin-top: 10px; font-size: 12px; opacity: 0.7;">Click for details</div>
+                </div>
+            `).join('');
+            
+            // Store metrics data for modal
+            window.metricsData = metrics;
+        }
+        
+        function formatNumber(num) {
+            if (num >= 1e9) return (num / 1e9).toFixed(1) + 'B';
+            if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M';
+            if (num >= 1e3) return (num / 1e3).toFixed(1) + 'K';
+            return num.toString();
+        }
+        
+        function analyzeTradeSignals(data) {
+            const trades = [];
+            const prices = data.prices;
+            const dates = data.dates;
+            
+            // Simple moving average crossover strategy
+            const sma20 = calculateSMA(prices.close, 20);
+            const sma50 = calculateSMA(prices.close, 50);
+            
+            let position = null;
+            
+            for (let i = 50; i < prices.close.length - 1; i++) {
+                const currentPrice = prices.close[i];
+                const nextPrice = prices.close[i + 1];
+                
+                // Buy signal: SMA20 crosses above SMA50
+                if (!position && sma20[i-1] <= sma50[i-1] && sma20[i] > sma50[i]) {
+                    position = {
+                        type: 'BUY',
+                        entryPrice: nextPrice,
+                        entryDate: dates[i + 1],
+                        entryIndex: i + 1
+                    };
+                }
+                // Sell signal: SMA20 crosses below SMA50 or stop loss
+                else if (position && (sma20[i-1] >= sma50[i-1] && sma20[i] < sma50[i])) {
+                    const profit = nextPrice - position.entryPrice;
+                    trades.push({
+                        ...position,
+                        exitPrice: nextPrice,
+                        exitDate: dates[i + 1],
+                        exitIndex: i + 1,
+                        profit: profit,
+                        profitPercent: ((profit / position.entryPrice) * 100).toFixed(2),
+                        duration: i + 1 - position.entryIndex
+                    });
+                    position = null;
+                }
+            }
+            
+            return trades;
+        }
+        
+        function calculateSMA(prices, period) {
+            const sma = [];
+            for (let i = 0; i < prices.length; i++) {
+                if (i < period - 1) {
+                    sma.push(null);
+                } else {
+                    const sum = prices.slice(i - period + 1, i + 1).reduce((a, b) => a + b, 0);
+                    sma.push(sum / period);
+                }
+            }
+            return sma;
+        }
+        
+        function findVolumeSpikes(data) {
+            const spikes = [];
+            const volumes = data.prices.volume;
+            const avgVolume = volumes.reduce((a, b) => a + b, 0) / volumes.length;
+            
+            volumes.forEach((vol, i) => {
+                if (vol > avgVolume * 2) {
+                    spikes.push({
+                        date: data.dates[i],
+                        volume: vol,
+                        multiplier: (vol / avgVolume).toFixed(1)
+                    });
+                }
+            });
+            
+            return spikes;
+        }
+        
+        function showMetricDetails(title, index) {
+            const metric = window.metricsData[index];
+            const modal = document.getElementById('detailModal');
+            const content = document.getElementById('modalContent');
+            
+            let detailsHTML = `
+                <h2 style="margin: 0 0 20px 0; color: #333;">${title} - Detailed Analysis</h2>
+                <div style="display: grid; gap: 15px; margin-bottom: 20px;">
+                    ${Object.entries(metric.details).map(([key, value]) => `
+                        <div style="display: flex; justify-content: space-between; padding: 10px; background: rgba(0,0,0,0.05); border-radius: 8px;">
+                            <span style="font-weight: bold;">${key}:</span>
+                            <span>${value}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            // Add trade details if available
+            if (metric.trades && metric.trades.length > 0) {
+                detailsHTML += `
+                    <h3 style="color: #333; margin: 20px 0 10px 0;">📊 Trade History</h3>
+                    <div style="max-height: 300px; overflow-y: auto; border: 1px solid #ddd; border-radius: 8px;">
+                        ${metric.trades.map((trade, i) => `
+                            <div style="padding: 10px; border-bottom: 1px solid #eee; ${trade.profit > 0 ? 'background: rgba(40, 167, 69, 0.1)' : 'background: rgba(220, 53, 69, 0.1)'}">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                    <strong>Trade #${i + 1}</strong>
+                                    <span style="color: ${trade.profit > 0 ? '#28a745' : '#dc3545'}; font-weight: bold;">
+                                        ${trade.profit > 0 ? '+' : ''}$${trade.profit.toFixed(2)} (${trade.profitPercent}%)
+                                    </span>
+                                </div>
+                                <div style="font-size: 12px; color: #666;">
+                                    Entry: $${trade.entryPrice.toFixed(2)} on ${trade.entryDate}<br>
+                                    Exit: $${trade.exitPrice.toFixed(2)} on ${trade.exitDate}<br>
+                                    Duration: ${trade.duration} days
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+            
+            // Add volume spikes if available
+            if (metric.volumeSpikes && metric.volumeSpikes.length > 0) {
+                detailsHTML += `
+                    <h3 style="color: #333; margin: 20px 0 10px 0;">📈 Volume Spikes</h3>
+                    <div style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; border-radius: 8px;">
+                        ${metric.volumeSpikes.slice(0, 10).map(spike => `
+                            <div style="padding: 8px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between;">
+                                <span>${spike.date}</span>
+                                <span><strong>${formatNumber(spike.volume)}</strong> (${spike.multiplier}x avg)</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+            
+            detailsHTML += `
+                <div style="margin-top: 20px; padding: 15px; background: rgba(0,123,255,0.1); border-radius: 8px; border-left: 4px solid #007bff;">
+                    <strong>💡 Analysis:</strong> This shows actual trading signals and volume analysis based on technical indicators.
+                </div>
+            `;
+            
+            content.innerHTML = detailsHTML;
+            modal.style.display = 'block';
+        }
+        
+        function closeDetailModal() {
+            document.getElementById('detailModal').style.display = 'none';
+        }
+        
+        // Close modal when clicking outside
+        document.getElementById('detailModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeDetailModal();
+            }
+        });
+
+        function toggleTheme() {
+            isDark = !isDark;
+            document.body.style.background = isDark ? 
+                'linear-gradient(135deg, #232526 0%, #414345 100%)' : 
+                'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+            
+            const btn = document.querySelector('button[onclick="toggleTheme()"]');
+            btn.textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+            
+            if (currentData) {
+                renderChart(currentData, document.getElementById('chartType').value, currentDataType);
+                if (currentDataType === 'stocks') {
+                    renderVolumeChart(currentData);
+                }
+            }
+        }
+    </script>
+</body>
+</html>
